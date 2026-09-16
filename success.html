@@ -1,0 +1,15 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>決済確認</title>
+<body><main><h1>決済を確認しています</h1><div id="status">少々お待ちください。</div></main>
+<script>
+const p=new URLSearchParams(location.search),id=p.get('order_id');
+async function check(){
+ const r=await fetch('/api/order/'+encodeURIComponent(id)),d=await r.json();
+ if(d.status==='paid'){
+  localStorage.setItem('fortune_paid_result_v1',JSON.stringify(d));
+  document.getElementById('status').innerHTML='<h2>決済完了</h2><p>詳細鑑定を保存しました。</p><a href="/">鑑定ページへ戻る</a>';
+  return;
+ }
+ setTimeout(check,1500);
+}
+if(id)check(); else document.getElementById('status').textContent='注文IDがありません。';
+</script></body></html>

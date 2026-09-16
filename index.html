@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>総合占い Core v3.9</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;background:#f7f3ee;color:#2b2522;margin:0}
+main{max-width:720px;margin:auto;padding:28px 18px}
+.card{background:white;border-radius:18px;padding:22px;box-shadow:0 8px 28px #00000012}
+h1{margin-top:0} label{display:block;margin:16px 0 6px;font-weight:700}
+input,select,textarea,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #cfc5bb;font-size:16px}
+button{margin-top:20px;background:#3c302b;color:white;border:0;font-weight:700}
+#result{display:none;margin-top:20px;padding:18px;background:#faf7f2;border-radius:12px}
+.small{font-size:13px;color:#6e625b}
+
+.warn{padding:12px;border:1px solid currentColor;border-radius:10px;margin:10px 0}
+
+.modebar{display:flex;gap:8px;justify-content:center;margin:12px auto;max-width:760px}
+.modebar button{width:auto;padding:9px 16px}
+body.userMode .devOnly{display:none!important}
+body.devMode .devOnly{display:block}
+body.userMode .debug{display:none!important}
+.modeBadge{font-size:.85rem;opacity:.75;text-align:center}
+
+.userOnly{display:block} body.devMode .userOnly{display:none!important}
+.steps{max-width:760px;margin:8px auto 16px;display:flex;gap:6px}.steps span{flex:1;text-align:center;padding:8px 4px;border-radius:999px;opacity:.45;border:1px solid currentColor;font-size:.82rem}.steps span.active{opacity:1;font-weight:700}
+#paidCta{margin-top:16px} #paidPreview{margin-top:12px}
+
+.paidProduct{padding:16px;border:1px solid rgba(127,127,127,.35);border-radius:14px;margin-top:12px}
+.price{font-size:1.65rem;font-weight:800;margin:8px 0}
+.price small{font-size:.9rem;font-weight:500}
+.paidGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:14px 0}
+.paidGrid>div{padding:12px;border:1px solid rgba(127,127,127,.25);border-radius:12px}
+.paidGrid p{margin:.35rem 0 0}
+.notice{font-size:.85rem;opacity:.75}
+.paidLockedSection{padding:10px 0;border-bottom:1px solid rgba(127,127,127,.2)}
+
+.paidResultPage{max-width:760px;margin:18px auto}
+.paidHero{padding:24px;border:1px solid rgba(127,127,127,.3);border-radius:18px;margin-bottom:14px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;opacity:.7}
+.resultSection{padding:18px;margin:10px 0;border:1px solid rgba(127,127,127,.25);border-radius:14px}
+.resultSection h3{margin-top:0}
+.resultIndex{font-size:.75rem;opacity:.6}
+</style>
+</head>
+<body>
+<div class="modebar">
+ <button type="button" id="userModeBtn">利用者画面</button>
+ <button type="button" id="devModeBtn">開発者画面</button>
+</div><div class="userOnly steps" id="steps"><span class="active" data-step="1">1 入力</span><span data-step="2">2 解析</span><span data-step="3">3 無料鑑定</span><span data-step="4">4 詳細鑑定</span></div>
+<main>
+<div class="card">
+<h1>総合占い</h1>
+<p>生年月日と手のひらの情報をもとに、あなたの傾向を総合的に読み解きます。</p>
+<label>生年月日</label><input id="birth" type="date">
+<label>手のひら写真</label><input id="palm" type="file" accept="image/*">
+<label for="handSide">手の向き</label>
+<select id="handSide"><option value="auto">自動判定</option><option value="right">右手</option><option value="left">左手</option></select>
+<div class="devOnly"><label for="calibrationMode">線位置の校正</label>
+<select id="calibrationMode"><option value="auto">自動</option><option value="sample">実写サンプル校正</option></select></div>
+<canvas id="palmCanvas" style="display:none"></canvas>
+<canvas id="analysisPreview" style="display:none;width:100%;margin-top:12px;border-radius:12px"></canvas>
+<label>相談テーマ</label>
+<select id="theme"><option>総合</option><option>恋愛</option><option>仕事</option><option>金運</option><option>相性</option></select>
+<label>相談内容（任意）</label><textarea id="question" rows="4" placeholder="気になっていることを書いてください"></textarea>
+<button onclick="fortune()">無料鑑定を試す</button>
+<p class="small">※これは開発中の試作版です。Core v3.9：決済接続前の注文管理コアを追加。注文ID発行、購入済み判定、同一鑑定の二重購入防止、鑑定結果のブラウザ保存、購入済み鑑定の復元に対応しました。</p>
+<p id="userStatus" class="modeBadge">生年月日と手の写真を入力して鑑定してください。</p>
+<div id="result"></div>
+</div>
+<div class="card devOnly" id="qaPanel"><h2>認識QA</h2><p>教師データの正解線と自動追跡線を比較して精度を数値化します。</p><button type="button" id="qaRun">現在の解析を評価</button><button type="button" id="qaRefine">誤差部分を自動再探索</button><button type="button" id="qaExport">QA結果JSON</button><div id="qaResult">まだ評価していません。</div></div>
+<div class="card userOnly" id="paidCta" style="display:none">
+ <h2>詳細鑑定</h2>
+ <p>無料版で全体傾向を確認したあと、さらに深く知りたい人向けの1回購入型鑑定です。</p>
+ <div class="paidProduct">
+  <h3>総合・詳細鑑定</h3>
+  <p class="price">¥980 <small>（1回）</small></p>
+  <p>生年月日・主要3線・選択テーマ・相談内容を統合して、無料版より詳しい個別鑑定を表示します。</p>
+  <button type="button" id="paidPreviewBtn">詳細鑑定の内容を見る</button>
+ </div>
+ <div id="paidPreview" style="display:none">
+  <h3>有料版で開放する内容</h3>
+  <div class="paidGrid">
+   <div><b>① 現在の状態</b><p>手相と生年月日を統合した現在の傾向。</p></div>
+   <div><b>② 強み</b><p>活かしやすい性質と行動パターン。</p></div>
+   <div><b>③ 注意点</b><p>つまずきやすい傾向と意識したい点。</p></div>
+   <div><b>④ テーマ詳細</b><p>恋愛・仕事・金運・相性など選択テーマを深掘り。</p></div>
+   <div><b>⑤ 相談への個別回答</b><p>入力した相談内容に合わせた補足鑑定。</p></div>
+   <div><b>⑥ 行動ヒント</b><p>結果を自己理解に活かすための具体的な観点。</p></div>
+  </div>
+  <p class="notice">占い結果は娯楽・自己理解の参考情報です。将来や結果を保証するものではありません。</p>
+  <button type="button" id="purchaseBtn" disabled><span data-product-price>¥980</span>で詳細鑑定を開放（決済準備中）</button><button type="button" id="stripeCheckoutBtn">Stripeで詳細鑑定を購入</button><button type="button" id="testUnlockBtn" class="devOnly">開発テスト：購入後ページを開く</button>
+ </div>
+</div>
+<div class="card devOnly" id="textQaPanel">
+ <h2>鑑定文章QA</h2>
+ <p>直近の有料鑑定文を、文章量・重複・具体性・構成・注意書きの5項目で検査します。</p>
+ <button type="button" id="textQaRun">文章QAを実行</button><button type="button" id="textRefineRun">文章を自動リファイン</button>
+ <button type="button" id="textQaExport">文章QA JSON</button>
+ <div id="textQaResult">まだ評価していません。</div>
+</div>
+<div class="card devOnly" id="integratedQaPanel">
+ <h2>総合鑑定QA</h2>
+ <p>手相解析・生年月日・相談分類・最終鑑定文の整合性をまとめて検査します。</p>
+ <button type="button" id="integratedQaRun">総合QAを実行</button>
+ <button type="button" id="integratedQaExport">総合QA JSON</button>
+ <div id="integratedQaResult">まだ評価していません。</div>
+</div>
+<div class="card devOnly" id="finalGatePanel">
+ <h2>最終品質ゲート</h2>
+ <p>利用者へ表示する前に、総合整合性と文章QAを検査し、修正可能な問題は自動補正して再判定します。</p>
+ <button type="button" id="finalGateRun">最終品質ゲートを実行</button>
+ <div id="finalGateResult">まだ判定していません。</div>
+</div>
+<section class="userOnly paidResultPage" id="paidResultPage" style="display:none">
+ <div class="paidHero">
+  <p class="eyebrow">総合・詳細鑑定書</p>
+  <h2 id="paidResultTitle">あなたの詳細鑑定</h2>
+  <p id="paidResultMeta"></p>
+ </div>
+ <div id="paidResultSections"></div>
+ <div class="card">
+  <h3>この鑑定について</h3>
+  <p id="paidResultDisclaimer"></p>
+  <button type="button" id="backToFree">無料鑑定へ戻る</button>
+ </div>
+</section>
+<div class="card userOnly" id="orderStatusCard" style="display:none">
+ <h2>購入状況</h2>
+ <div id="orderStatusText">未購入</div>
+ <button type="button" id="restorePurchaseBtn">購入済み鑑定を復元</button>
+</div>
+<div class="card devOnly" id="pricingPanel">
+<h2>商品・価格設定</h2>
+<p>公開後の価格テスト用。現在はブラウザ内保存です。</p>
+<label>商品名 <input id="productNameInput" type="text"></label>
+<label>詳細鑑定価格 <select id="productPriceInput">
+<option value="500">¥500</option><option value="780">¥780</option><option value="980">¥980</option>
+<option value="1280">¥1,280</option><option value="1480">¥1,480</option>
+<option value="1980">¥1,980</option><option value="2980">¥2,980</option>
+</select></label>
+<button type="button" id="saveProductConfigBtn">価格設定を保存</button>
+<div id="productConfigStatus"></div>
+</div>
+<script>
+const PALM_RULES={life:{long:'持久力を活かして長期戦に強い傾向',deep:'エネルギーを一点に集中しやすい傾向',faint:'無理を重ねず環境調整で力を出しやすい傾向'},head:{straight:'現実的に整理して判断する傾向',curved:'想像力と感覚を判断に取り入れる傾向',long:'考えを深掘りしてから動く傾向'},heart:{curved:'感情表現が比較的豊かな傾向',straight:'関係性を冷静に見極める傾向',long:'人との結びつきを大切にする傾向'}};
+function birthCore(b){const d=[...b.replaceAll('-','')].map(Number);let n=d.reduce((a,x)=>a+x,0);while(n>9)n=[...String(n)].reduce((a,x)=>a+Number(x),0);return n}
+
+function loadPalmImage(file){
+ return new Promise((resolve,reject)=>{
+  const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('画像を読み込めませんでした'))};
+  img.src=url;
+ });
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function luminance(r,g,b){return .299*r+.587*g+.114*b}
+async function palmFeatures(file,handSide='auto',calibrationMode='auto'){
+ const img=await loadPalmImage(file);
+ const max=720,scale=Math.min(1,max/Math.max(img.width,img.height));
+ const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+ const c=document.getElementById('palmCanvas'); c.width=w;c.height=h;
+ const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
+ const im=ctx.getImageData(0,0,w,h),d=im.data,gray=new Float32Array(w*h);
+ let sum=0,sum2=0;
+ for(let i=0,p=0;i<d.length;i+=4,p++){const g=luminance(d[i],d[i+1],d[i+2]);gray[p]=g;sum+=g;sum2+=g*g}
+ const mean=sum/gray.length,sd=Math.sqrt(Math.max(0,sum2/gray.length-mean*mean));
+ const normGray=new Float32Array(w*h);
+ const cell=24,cols=Math.ceil(w/cell),rowsN=Math.ceil(h/cell),means=new Float32Array(cols*rowsN);
+ for(let gy=0;gy<rowsN;gy++)for(let gx=0;gx<cols;gx++){
+  let ss=0,nn=0;
+  for(let y=gy*cell;y<Math.min(h,(gy+1)*cell);y+=3)for(let x=gx*cell;x<Math.min(w,(gx+1)*cell);x+=3){ss+=gray[y*w+x];nn++}
+  means[gy*cols+gx]=ss/Math.max(1,nn);
+ }
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const gx=Math.min(cols-1,Math.floor(x/cell)),gy=Math.min(rowsN-1,Math.floor(y/cell));
+  normGray[y*w+x]=clamp(gray[y*w+x]-means[gy*cols+gx]+128,0,255);
+ }
+
+
+ // Palm-oriented central ROI. v0.6 assumes the photo is roughly palm-up and upright.
+ // v1.1 calibration: real smartphone palm photos usually include fingers and wrist.
+ // Restrict analysis mainly to the palm body so finger-joint creases/background edges do not dominate.
+ const portrait=h>=w;
+ // Estimate palm center from warm/skin-like pixels. This is only geometry calibration,
+ // not identity/biometric recognition.
+ let skinX=0,skinY=0,skinN=0;
+ for(let y=Math.floor(h*.18);y<Math.floor(h*.94);y+=4){
+  for(let x=Math.floor(w*.04);x<Math.floor(w*.96);x+=4){
+   const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+   const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+   if(r>70 && r>g*.92 && g>b*.72 && mx-mn>18){
+    skinX+=x;skinY+=y;skinN++;
+   }
+  }
+ }
+ const palmCx=skinN?skinX/skinN:w*.5, palmCy=skinN?skinY/skinN:h*.60;
+ let lowerL=0,lowerR=0;
+ for(let y=Math.floor(h*.48);y<Math.floor(h*.84);y+=4)for(let x=Math.floor(w*.05);x<Math.floor(w*.95);x+=4){
+  const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+  if(r>70&&r>g*.92&&g>b*.72&&mx-mn>18){if(x<w*.5)lowerL++;else lowerR++}
+ }
+ const autoHand=lowerR>lowerL*1.06?'right':lowerL>lowerR*1.06?'left':'unknown';
+ const resolvedHand=handSide==='auto'?autoHand:handSide, mirror=resolvedHand==='left';
+ const palmCx0=mirror?w-palmCx:palmCx;
+ const shiftX=clamp((palmCx0/w-.50),-.10,.10), shiftY=clamp((palmCy/h-.60),-.10,.10);
+ const roi=portrait
+   ?{x0:Math.floor(w*(.10+shiftX*.35)),x1:Math.floor(w*(.91+shiftX*.35)),y0:Math.floor(h*(.34+shiftY*.40)),y1:Math.floor(h*(.89+shiftY*.25))}
+   :{x0:Math.floor(w*(.12+shiftX*.30)),x1:Math.floor(w*(.88+shiftX*.30)),y0:Math.floor(h*(.22+shiftY*.30)),y1:Math.floor(h*(.90+shiftY*.20))};
+ let lumSum=0,lumSq=0,nLum=0,darkN=0,brightN=0;
+ for(let y=roi.y0;y<roi.y1;y+=3)for(let x=roi.x0;x<roi.x1;x+=3){
+  const v=gray[y*w+x];lumSum+=v;lumSq+=v*v;nLum++;if(v<55)darkN++;if(v>235)brightN++;
+ }
+ const meanLum=lumSum/Math.max(1,nLum);
+ const shadowRatio=darkN/Math.max(1,nLum),highlightRatio=brightN/Math.max(1,nLum);
+ const exposureScore=clamp(1-Math.abs(meanLum-145)/120,0,1);
+ const lightingScore=clamp(exposureScore*(1-shadowRatio*1.8)*(1-highlightRatio*1.4),0,1);
+ // v1.8 scale normalization: estimate palm bounding box from skin-like pixels
+ // inside the calibrated region, then express geometry in palm-relative units.
+ let minPX=w,maxPX=0,minPY=h,maxPY=0,palmSkinN=0;
+ for(let y=roi.y0;y<roi.y1;y+=2)for(let x=roi.x0;x<roi.x1;x+=2){
+  const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+  if(r>70&&r>g*.92&&g>b*.72&&mx-mn>18){
+   minPX=Math.min(minPX,x);maxPX=Math.max(maxPX,x);minPY=Math.min(minPY,y);maxPY=Math.max(maxPY,y);palmSkinN++;
+  }
+ }
+ const palmBox=palmSkinN>20?{x0:minPX,x1:maxPX,y0:minPY,y1:maxPY}:{x0:roi.x0,x1:roi.x1,y0:roi.y0,y1:roi.y1};
+ const palmW=Math.max(1,palmBox.x1-palmBox.x0),palmH=Math.max(1,palmBox.y1-palmBox.y0);
+ const palmScale=Math.sqrt(palmW*palmH);
+ const frameCoverage=clamp((palmW*palmH)/(w*h),0,1);
+ const scaleQuality=clamp(1-Math.abs(frameCoverage-.38)/.38,0,1);
+
+
+ const edge=new Float32Array(w*h);
+ let es=0,en=0;
+ for(let y=roi.y0+1;y<roi.y1-1;y++){
+  for(let x=roi.x0+1;x<roi.x1-1;x++){
+   const p=y*w+x;
+   const gx=normGray[p+1]-normGray[p-1],gy=normGray[p+w]-normGray[p-w];
+   const m=Math.hypot(gx,gy);edge[p]=m;es+=m;en++;
+  }
+ }
+ const emean=en?es/en:0,eth=Math.max(16,emean*1.55);
+
+ // Divide the palm into anatomically useful bands and score crease candidates.
+ const analysisContext={
+  hand:resolvedHand,orientation:portrait?'portrait':'landscape',
+  lighting:+lightingScore.toFixed(3),scale:+frameCoverage.toFixed(3),tilt:0
+ };
+ const contextModel=learnedPalmModel.enabled?buildContextPriors(learnedPalmModel.samples,analysisContext):{chosen:[],priors:{}};
+ const activePriors=contextModel.priors;
+ function bandStats(name,x0,x1,y0,y1){
+  if(mirror){const a=1-x1,b=1-x0;x0=a;x1=b}
+  x0=Math.floor(w*x0);x1=Math.floor(w*x1);y0=Math.floor(h*y0);y1=Math.floor(h*y1);
+  let count=0,strong=0,total=0,minX=w,maxX=0,minY=h,maxY=0;
+  for(let y=y0;y<y1;y+=2)for(let x=x0;x<x1;x+=2){
+   const p=y*w+x,m=edge[p];count++;total+=m;
+   if(m>eth){strong++;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
+  }
+  const density=count?strong/count:0;
+  const spanX=strong?((maxX-minX)/Math.max(1,x1-x0)):0;
+  const spanY=strong?((maxY-minY)/Math.max(1,y1-y0)):0;
+  // Approximate trace features from strong crease pixels inside each candidate band.
+  let rows=[],prev=null,gaps=0,curve=0,tracePts=[];
+  // v1.3 smooth-path tracker. Head/heart are traced left-to-right;
+  // life line is traced top-to-bottom. Each step prefers a strong crease
+  // close to the previous point, reducing jumps to unrelated wrinkles.
+  const vertical=name.includes('生命');
+  const step=3, searchRadius=Math.max(10,Math.floor((vertical?(x1-x0):(y1-y0))*.16));
+  let last=null;
+  if(!vertical){
+   for(let x=x0;x<x1;x+=step){
+    let best=null,bestScore=-1;
+    const cy=last?last.y:Math.floor((y0+y1)/2);
+    for(let y=Math.max(y0,cy-searchRadius);y<Math.min(y1,cy+searchRadius);y+=2){
+     const m=edge[y*w+x], smooth=last?Math.abs(y-last.y):0;
+     let priorBonus=0;
+     const prior=learnedPalmModel.enabled?activePriors[name.includes('感情')?'heart':name.includes('知能')?'head':'life']:null;
+     if(prior?.curve?.length){
+      const t=clamp((x-x0)/Math.max(1,x1-x0),0,1),pp=prior.curve[Math.min(prior.curve.length-1,Math.round(t*(prior.curve.length-1)))];
+      const py=y0+pp.y*(y1-y0);
+      priorBonus=Math.max(0,10-Math.abs(y-py)*.18);
+     }
+     const score=m-smooth*1.35+priorBonus;
+     if(m>eth*.78 && score>bestScore){bestScore=score;best={x,y,m}}
+    }
+    if(best){tracePts.push(best);if(last)curve+=Math.abs(best.y-last.y);last=best}else if(tracePts.length)gaps++;
+   }
+  }else{
+   for(let y=y0;y<y1;y+=step){
+    let best=null,bestScore=-1;
+    const cx=last?last.x:Math.floor(x0+(x1-x0)*.60);
+    for(let x=Math.max(x0,cx-searchRadius);x<Math.min(x1,cx+searchRadius);x+=2){
+     const m=edge[y*w+x], smooth=last?Math.abs(x-last.x):0;
+     // Life-line prior gently favors the thumb-side arc without forcing it.
+     const arcPrior=(x-x0)/Math.max(1,x1-x0);
+     let learnedBonus=0;
+     const learnedPrior=learnedPalmModel.enabled?activePriors.life:null;
+     if(learnedPrior?.curve?.length){
+      const t=clamp((y-y0)/Math.max(1,y1-y0),0,1),pp=learnedPrior.curve[Math.min(learnedPrior.curve.length-1,Math.round(t*(learnedPrior.curve.length-1)))];
+      const px=x0+pp.x*(x1-x0);
+      learnedBonus=Math.max(0,10-Math.abs(x-px)*.18);
+     }
+     const score=m-smooth*1.35+(arcPrior>.35&&arcPrior<.88?3:0)+learnedBonus;
+     if(m>eth*.78 && score>bestScore){bestScore=score;best={x,y,m}}
+    }
+    if(best){tracePts.push(best);if(last)curve+=Math.abs(best.x-last.x);last=best}else if(tracePts.length)gaps++;
+   }
+  }
+  rows=tracePts.map(p=>({x:p.x,y:p.y,n:1}));
+  const traceLength=tracePts.length>1?tracePts.reduce((acc,p,i)=>{
+    if(!i)return 0;const q=tracePts[i-1];return acc+Math.hypot(p.x-q.x,p.y-q.y)
+  },0):0;
+  const diag=Math.hypot(x1-x0,y1-y0);
+  const expectedSteps=Math.max(1,Math.floor((vertical?(y1-y0):(x1-x0))/step));
+  const coverage=clamp(tracePts.length/expectedSteps,0,1);
+  const lengthNorm=clamp(traceLength/Math.max(1,vertical?(y1-y0):(x1-x0)),0,1);
+  const continuity=clamp(coverage*(1-gaps/expectedSteps),0,1);
+  const curvature=clamp(curve/Math.max(1,(x1-x0)*1.5),0,1);
+  const darkness=clamp((total/Math.max(1,count))/Math.max(1,eth*1.4),0,1);
+  let direction=0,branchProxy=0,crossProxy=0;
+  let startPoint=null,endPoint=null,gapCount=0,maxGap=0,branchPoints=[];
+  if(tracePts.length>1){
+    const first=tracePts[0],last=tracePts[tracePts.length-1];
+    direction=Math.atan2(last.y-first.y,last.x-first.x)*180/Math.PI;
+    startPoint={x:first.x,y:first.y}; endPoint={x:last.x,y:last.y};
+
+    // Detect unusually large jumps between consecutive traced points as break/gap candidates.
+    const nominal=step*2.4;
+    for(let i=1;i<tracePts.length;i++){
+      const a=tracePts[i-1],b=tracePts[i];
+      const d=Math.hypot(b.x-a.x,b.y-a.y);
+      if(d>nominal){gapCount++;maxGap=Math.max(maxGap,d)}
+    }
+
+    // Branch candidate: around each path point, look for another strong edge arm
+    // separated from the main path direction.
+    for(let i=3;i<tracePts.length-3;i+=4){
+      const p=tracePts[i],pa=tracePts[i-2],pb=tracePts[i+2];
+      const mainAng=Math.atan2(pb.y-pa.y,pb.x-pa.x);
+      let arms=0;
+      for(let ang=0;ang<Math.PI*2;ang+=Math.PI/6){
+        let diff=Math.abs(Math.atan2(Math.sin(ang-mainAng),Math.cos(ang-mainAng)));
+        if(diff<.55 || Math.abs(diff-Math.PI)<.55)continue;
+        let hit=0;
+        for(let rr=5;rr<=14;rr+=3){
+          const xx=Math.round(p.x+Math.cos(ang)*rr),yy=Math.round(p.y+Math.sin(ang)*rr);
+          if(xx>=x0&&xx<x1&&yy>=y0&&yy<y1&&edge[yy*w+xx]>eth*.92)hit++;
+        }
+        if(hit>=2)arms++;
+      }
+      if(arms>=1)branchPoints.push({x:p.x,y:p.y});
+    }
+  }
+  // Local multi-peak rows are treated as a branch candidate proxy.
+  let multi=0,activeRows=0;
+  for(let y=y0;y<y1;y+=4){
+    let runs=0,inRun=false;
+    for(let x=x0;x<x1;x+=2){
+      const on=edge[y*w+x]>eth;
+      if(on&&!inRun){runs++;inRun=true}else if(!on){inRun=false}
+    }
+    if(runs){activeRows++;if(runs>=3)multi++}
+  }
+  branchProxy=activeRows?clamp(multi/activeRows,0,1):0;
+  // High edge concentration near the middle of a band is a crude crossing proxy.
+  let midStrong=0,midN=0;
+  const mx0=Math.floor(x0+(x1-x0)*.35),mx1=Math.floor(x0+(x1-x0)*.65);
+  const my0=Math.floor(y0+(y1-y0)*.35),my1=Math.floor(y0+(y1-y0)*.65);
+  for(let y=my0;y<my1;y+=2)for(let x=mx0;x<mx1;x+=2){midN++;if(edge[y*w+x]>eth)midStrong++}
+  crossProxy=midN?clamp((midStrong/midN)/.22,0,1):0;
+  return {name,density,spanX,spanY,score:clamp(density/.18*.40+spanX*.18+spanY*.08+lengthNorm*.14+continuity*.10+darkness*.10,0,1),
+          lengthNorm,continuity,coverage,curvature,darkness,direction,branchProxy,crossProxy,
+          startPoint,endPoint,gapCount,maxGap,branchPoints,tracePts,box:{x0,y0,x1,y1}};
+ }
+ // These are candidate zones, not definitive medical/anatomical recognition.
+ // Zones calibrated against an actual upright smartphone palm photo.
+ // Heart: just below finger bases; Head: central diagonal; Life: arc around thumb mound.
+ const sx=shiftX*.45, sy=shiftY*.45;
+ // v2.0 calibration profile derived from the supplied 1152x1536 upright palm sample.
+ // It narrows the three search corridors to reduce finger-joint/background capture.
+ const sampleCal=calibrationMode==='sample' && portrait;
+ const heart=sampleCal?bandStats('感情線候補',.16+sx,.82+sx,.395+sy,.525+sy)
+   :(portrait?bandStats('感情線候補',.13+sx,.83+sx,.37+sy,.54+sy):bandStats('感情線候補',.18+sx,.83+sx,.28+sy,.48+sy));
+ const head=sampleCal?bandStats('知能線候補',.15+sx,.84+sx,.505+sy,.635+sy)
+   :(portrait?bandStats('知能線候補',.12+sx,.86+sx,.48+sy,.67+sy):bandStats('知能線候補',.16+sx,.86+sx,.42+sy,.64+sy));
+ const life=sampleCal?bandStats('生命線候補',.39+sx,.88+sx,.515+sy,.835+sy)
+   :(portrait?bandStats('生命線候補',.34+sx,.91+sx,.48+sy,.87+sy):bandStats('生命線候補',.28+sx,.82+sx,.43+sy,.88+sy));
+ const tiltDeg=clamp(head.direction,-18,18), tiltQuality=clamp(head.coverage*(1-Math.abs(tiltDeg)/45),0,1);
+ analysisContext.tilt=+tiltDeg.toFixed(2);
+ const tiltRad=-tiltDeg*Math.PI/180;
+ function rotateAroundPalm(x,y,ang=tiltRad){
+   const dx=x-palmCx,dy=y-palmCy,c=Math.cos(ang),sn=Math.sin(ang);
+   return {x:palmCx+dx*c-dy*sn,y:palmCy+dx*sn+dy*c};
+ }
+ // Correct already-traced points into a normalized palm coordinate system.
+ [heart,head,life].forEach(z=>{
+   z.rawTracePts=z.tracePts.map(p=>({x:p.x,y:p.y}));
+   z.tracePts=z.tracePts.map(p=>rotateAroundPalm(p.x,p.y));
+   if(z.tracePts.length>1){
+     z.startPoint={x:z.tracePts[0].x,y:z.tracePts[0].y};
+     z.endPoint={x:z.tracePts[z.tracePts.length-1].x,y:z.tracePts[z.tracePts.length-1].y};
+     const a=z.startPoint,b=z.endPoint;
+     z.correctedDirection=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI;
+     let cv=0,len=0;
+     for(let i=1;i<z.tracePts.length;i++){
+       const p=z.tracePts[i-1],q=z.tracePts[i];
+       len+=Math.hypot(q.x-p.x,q.y-p.y);
+       if(i>1){
+         const r=z.tracePts[i-2];
+         const a1=Math.atan2(p.y-r.y,p.x-r.x),a2=Math.atan2(q.y-p.y,q.x-p.x);
+         cv+=Math.abs(Math.atan2(Math.sin(a2-a1),Math.cos(a2-a1)));
+       }
+     }
+     z.correctedLength=len;
+     z.correctedCurvature=clamp(cv/Math.max(1,z.tracePts.length*.22),0,1);
+   } else {z.correctedDirection=z.direction;z.correctedLength=0;z.correctedCurvature=z.curvature}
+   z.palmRelativeLength=clamp(z.correctedLength/Math.max(1,palmScale),0,2);
+   z.startNorm=z.startPoint?{x:+((z.startPoint.x-palmBox.x0)/palmW).toFixed(3),y:+((z.startPoint.y-palmBox.y0)/palmH).toFixed(3)}:null;
+   z.endNorm=z.endPoint?{x:+((z.endPoint.x-palmBox.x0)/palmW).toFixed(3),y:+((z.endPoint.y-palmBox.y0)/palmH).toFixed(3)}:null;
+ });
+
+ const resolutionScore=clamp(Math.min(w,h)/520,0,1);
+ const contrastScore=clamp(sd/55,0,1);
+ const candidateScore=(heart.score+head.score+life.score)/3;
+ const confidence=clamp(.35*resolutionScore+.30*contrastScore+.35*candidateScore,0,1);
+ const notes=[];
+ if(Math.min(w,h)<320)notes.push('解像度が低めです');
+ if(sd<24)notes.push('明暗差が少なく、線が読み取りにくい可能性があります');
+ if(candidateScore<.20)notes.push('主要線候補が弱いため、手のひらを正面から明るく撮影してください');
+ if(!notes.length)notes.push('主要線候補を抽出できました');
+
+ // Visual debug overlay for QA.
+ const pv=document.getElementById('analysisPreview');pv.width=w;pv.height=h;pv.style.display='block';
+ const pc=pv.getContext('2d');pc.drawImage(img,0,0,w,h);
+ pc.lineWidth=Math.max(2,w/250);pc.font=`${Math.max(12,w/35)}px sans-serif`;
+ pc.save();
+ pc.beginPath();pc.arc(palmCx,palmCy,7,0,Math.PI*2);pc.stroke();
+ pc.fillText('掌中心推定',Math.min(w-90,palmCx+10),Math.max(18,palmCy-8));
+ // Normalized vertical axis after tilt correction.
+ const ax1=rotateAroundPalm(palmCx,palmCy-h*.22),ax2=rotateAroundPalm(palmCx,palmCy+h*.22);
+ pc.setLineDash([6,6]);pc.beginPath();pc.moveTo(ax1.x,ax1.y);pc.lineTo(ax2.x,ax2.y);pc.stroke();pc.setLineDash([]);
+ pc.fillText(`傾き補正 ${tiltDeg.toFixed(1)}°`,Math.max(6,palmCx-70),Math.max(18,palmCy-h*.23));
+ pc.restore();
+ [heart,head,life].forEach(z=>{
+   pc.strokeRect(z.box.x0,z.box.y0,z.box.x1-z.box.x0,z.box.y1-z.box.y0);
+   pc.fillText(`${z.name} ${Math.round(z.score*100)}%`,z.box.x0+4,z.box.y0+18);
+   if(z.tracePts.length>1){
+    pc.beginPath(); pc.moveTo(z.tracePts[0].x,z.tracePts[0].y);
+    for(let i=1;i<z.tracePts.length;i++)pc.lineTo(z.tracePts[i].x,z.tracePts[i].y);
+    pc.stroke();
+    if(z.startPoint){pc.beginPath();pc.arc(z.startPoint.x,z.startPoint.y,5,0,Math.PI*2);pc.stroke()}
+    if(z.endPoint){pc.beginPath();pc.arc(z.endPoint.x,z.endPoint.y,5,0,Math.PI*2);pc.stroke()}
+    z.branchPoints.slice(0,12).forEach(p=>{pc.beginPath();pc.moveTo(p.x-4,p.y-4);pc.lineTo(p.x+4,p.y+4);pc.moveTo(p.x+4,p.y-4);pc.lineTo(p.x-4,p.y+4);pc.stroke()});
+   }
+ });
+ const lineCoverage=(heart.coverage+head.coverage+life.coverage)/3;
+ const lineScore=(heart.score+head.score+life.score)/3;
+ const reasons=[];
+ if(Math.min(img.width,img.height)<300)reasons.push('解像度不足');
+ if(lightingScore<.34)reasons.push('照明条件が不十分');
+ if(scaleQuality<.25)reasons.push('撮影距離が不適切');
+ if(lineCoverage<.28)reasons.push('主要線の追跡不足');
+ if(lineScore<.18)reasons.push('主要線候補が弱い');
+ if(resolvedHand==='unknown')reasons.push('左右手を判定できない');
+ const gateScore=clamp(confidence*.45+lightingScore*.15+scaleQuality*.15+lineCoverage*.15+lineScore*.10,0,1);
+ const status=reasons.length===0&&gateScore>=.52?'pass':gateScore>=.38?'retry':'reject';
+ const qualityGate={status,score:+gateScore.toFixed(3),reasons,
+  message:status==='pass'?'解析可能です。':status==='retry'?'解析精度が低めです。再撮影を推奨します。':'この写真では鑑定を行いません。撮影し直してください。'};
+ return {
+  confidence,quality:confidence>=.45?'good':'poor',notes,qualityGate,source:file.name,
+  image:{width:img.width,height:img.height,analysisWidth:w,analysisHeight:h,orientation:portrait?'portrait':'landscape',calibration:sampleCal?'real-sample-1152x1536-v1':'hand-side-tilt-v1',calibrationMode,learnedModel:{enabled:learnedPalmModel.enabled,samples:learnedPalmModel.samples.length,selected:contextModel.chosen.length},hand:{requested:handSide,auto:autoHand,resolved:resolvedHand,mirror},tilt:{degrees:+tiltDeg.toFixed(1),quality:+tiltQuality.toFixed(2)},palmCenter:{x:Math.round(palmCx),y:Math.round(palmCy)},shift:{x:+shiftX.toFixed(3),y:+shiftY.toFixed(3)}},
+  metrics:{contrast:+sd.toFixed(1),edgeMean:+emean.toFixed(1),candidateScore:+candidateScore.toFixed(3)},
+  life,head,heart
+ };
+}
+
+function level(v,lo=.34,hi=.67){return v>=hi?'high':v>=lo?'mid':'low'}
+function palmRuleEngine(p){
+ const tokens=[];
+ const L=p.life,H=p.head,E=p.heart;
+ function push(key,label,text,confidence){tokens.push({key,label,text,confidence:clamp(confidence,0,1)})}
+ push('life_length','生命線',
+      L.lengthNorm>.68?'物事を長期目線で積み上げる傾向として読みます。':
+      L.lengthNorm>.38?'持続と切り替えのバランス型として読みます。':'短期集中や転換を重視する傾向として読みます。',
+      L.score);
+ push('head_curve','知能線',
+      H.curvature>.52?'発想や直感を使う場面を重視する読みです。':
+      H.curvature>.25?'現実性と発想力を併用する読みです。':'筋道や実務性を重視する読みです。',
+      H.score);
+ push('heart_depth','感情線',
+      E.darkness>.58?'感情や人間関係への反応が表に出やすい傾向として読みます。':
+      E.darkness>.30?'感情表現は状況に合わせる傾向として読みます。':'感情を内側で整理してから表す傾向として読みます。',
+      E.score);
+ if(L.continuity<.48)push('life_break','生命線の連続性','環境や生活リズムの節目を意識する読みを補助的に加えます。',L.score*.8);
+ if(H.branchProxy>.45)push('head_branch','知能線の分岐候補','複数の考え方を行き来しやすい傾向として補助的に読みます。',H.score*.65);
+ if(E.branchProxy>.45)push('heart_branch','感情線の分岐候補','対人面で複数の価値観を調整する傾向として補助的に読みます。',E.score*.65);
+ if(L.gapCount>2)push('life_gap','生命線の切れ候補','節目や切り替えを意識する読みを補助的に加えます。',L.score*.55);
+ if(H.gapCount>2)push('head_gap','知能線の切れ候補','考え方や集中の切り替えが起きやすい読みを補助的に加えます。',H.score*.55);
+ if(E.gapCount>2)push('heart_gap','感情線の切れ候補','対人面で気持ちの切り替えを意識する読みを補助的に加えます。',E.score*.55);
+ if(H.branchPoints.length>1)push('head_branch2','知能線の分岐','複数の選択肢を比較しながら考える傾向として読みます。',H.score*.60);
+ if(E.branchPoints.length>1)push('heart_branch2','感情線の分岐','人間関係で一つの見方に固定されにくい傾向として読みます。',E.score*.60);
+ return tokens;
+}
+
+function birthProfile(num){
+ const map={
+  1:{drive:.90,relation:.45,money:.70,work:.88,keywords:['自立','決断','開拓']},
+  2:{drive:.45,relation:.92,money:.55,work:.62,keywords:['協調','観察','調整']},
+  3:{drive:.72,relation:.78,money:.58,work:.70,keywords:['表現','発想','交流']},
+  4:{drive:.68,relation:.58,money:.86,work:.90,keywords:['安定','継続','堅実']},
+  5:{drive:.88,relation:.70,money:.60,work:.76,keywords:['変化','行動','適応']},
+  6:{drive:.58,relation:.94,money:.72,work:.78,keywords:['責任','愛情','支援']},
+  7:{drive:.62,relation:.48,money:.68,work:.84,keywords:['分析','探究','専門']},
+  8:{drive:.94,relation:.58,money:.94,work:.92,keywords:['成果','実行','管理']},
+  9:{drive:.60,relation:.88,money:.52,work:.66,keywords:['共感','視野','理想']}
+ };
+ return map[num]||map[1];
+}
+function themeWeights(theme){
+ return {
+  '総合':{life:.34,head:.33,heart:.33,birth:.40},
+  '恋愛':{life:.16,head:.19,heart:.65,birth:.38},
+  '仕事':{life:.25,head:.58,heart:.17,birth:.44},
+  '金運':{life:.28,head:.52,heart:.20,birth:.48},
+  '相性':{life:.14,head:.24,heart:.62,birth:.40}
+ }[theme]||{life:.34,head:.33,heart:.33,birth:.40};
+}
+function integratedReading(num,palm,theme){
+ const b=birthProfile(num),w=themeWeights(theme);
+ const line=(z)=>clamp(z.score*.35+z.lengthNorm*.20+z.continuity*.18+z.darkness*.15+(1-z.curvature*.35)*.12,0,1);
+ const ls=line(palm.life),hs=line(palm.head),es=line(palm.heart);
+ const birthTheme=theme==='恋愛'||theme==='相性'?b.relation:theme==='仕事'?b.work:theme==='金運'?b.money:(b.drive+b.relation+b.work+b.money)/4;
+ const raw=ls*w.life+hs*w.head+es*w.heart;
+ const score=clamp(raw*(1-w.birth)+birthTheme*w.birth,0,1);
+ let band=score>=.72?'強め':score>=.52?'安定':score>=.34?'調整期':'慎重';
+ const focus=theme==='恋愛'||theme==='相性'?'感情線':theme==='仕事'||theme==='金運'?'知能線':'主要3線';
+ const summary=`${theme}では「${band}」の読み。${focus}を重めに見つつ、生年月日の「${b.keywords.join('・')}」傾向を統合しています。`;
+ return {score,band,summary,birth:b,components:{life:ls,head:hs,heart:es,birthTheme},weights:w};
+}
+
+
+
+
+let lastFinalGate=null;
+
+function repairIntegratedReading(ctx,pd){
+ let fixed={...pd,sections:pd.sections.map(x=>({...x}))};
+ const expectedIntent=consultationIntent(ctx.q,ctx.theme);
+ const dr=detailedThemeRule(ctx.theme,expectedIntent,ctx.ir.components,ctx.ir.birth);
+
+ const deepIndex=fixed.sections.findIndex(x=>x.title.includes('深掘り'));
+ if(deepIndex>=0){
+   fixed.sections[deepIndex].title=`${ctx.theme}の深掘り：${expectedIntent}`;
+   fixed.sections[deepIndex].text=`${dr.base} ${dr.intentText}`;
+ }
+
+ const consultIndex=fixed.sections.findIndex(x=>x.title.includes('相談'));
+ const safeQ=(ctx.q||'').replace(/[<>]/g,'').trim();
+ if(consultIndex>=0&&safeQ&&!fixed.sections[consultIndex].text.includes(safeQ)){
+   fixed.sections[consultIndex].text=`ご相談「${safeQ}」は「${expectedIntent}」に近い相談として整理しました。${dr.intentText} 自分で変えられること、相手や環境次第のこと、今すぐ決めなくてよいことを分けて考える読みです。`;
+ }
+
+ if(!fixed.disclaimer||!/保証|参考情報|娯楽/.test(fixed.disclaimer)){
+   fixed.disclaimer='この鑑定は娯楽・自己理解の参考情報であり、将来・健康・金銭的成果などを保証するものではありません。';
+ }
+ return fixed;
+}
+
+function finalQualityGate(ctx,pd){
+ const initialIntegrated=evaluateIntegratedReading(ctx,pd);
+ const initialText=evaluatePaidText(pd);
+
+ // Palm-image rejection is a hard stop: text repair must never bypass it.
+ if(ctx?.palm?.gate?.status==='REJECT'){
+   return {status:'BLOCK',reason:'PALM_IMAGE_REJECT',initialIntegrated,initialText,result:pd};
+ }
+
+ let candidate=pd,refined=false,repaired=false;
+ if(initialText.overall<0.82){
+   const r=refinePaidText(candidate);
+   if(r.accepted){candidate=r.result;refined=true}
+ }
+ let mid=evaluateIntegratedReading(ctx,candidate);
+ if(mid.overall<1){
+   candidate=repairIntegratedReading(ctx,candidate);repaired=true;
+ }
+ const finalIntegrated=evaluateIntegratedReading(ctx,candidate);
+ const finalText=evaluatePaidText(candidate);
+
+ const pass=finalIntegrated.overall>=1 && finalText.overall>=0.72;
+ return {
+   status:pass?'PASS':'HOLD',
+   refined,repaired,
+   initial:{integrated:initialIntegrated.overall,text:initialText.overall},
+   final:{integrated:finalIntegrated.overall,text:finalText.overall},
+   issues:finalIntegrated.issues,
+   textWarnings:finalText.warnings,
+   result:candidate
+ };
+}
+
+function runFinalGate(){
+ const box=document.getElementById('finalGateResult');
+ if(!lastReadingContext||!lastPaidReading){box.textContent='先に鑑定を1回実行してください。';return}
+ const g=finalQualityGate(lastReadingContext,lastPaidReading);
+ lastFinalGate=g;
+ if(g.status==='PASS')lastPaidReading=g.result;
+ box.innerHTML=`<p><b>判定：${g.status}</b></p>`+
+ (g.reason?`<p>停止理由：${g.reason}</p>`:
+ `<p>総合整合性 ${Math.round(g.initial.integrated*100)}% → ${Math.round(g.final.integrated*100)}% /
+ 文章QA ${Math.round(g.initial.text*100)}% → ${Math.round(g.final.text*100)}%</p>
+ <p>自動文章補正：${g.refined?'実行':'不要'} / 整合性補正：${g.repaired?'実行':'不要'}</p>
+ <p>${g.status==='PASS'?'利用者表示可能':'品質基準未達のため保留'}</p>`);
+}
+document.getElementById('finalGateRun')?.addEventListener('click',runFinalGate);
+
+function evaluateIntegratedReading(ctx,pd){
+ const issues=[],checks={};
+ if(!ctx||!pd)return {overall:0,issues:['鑑定コンテキストがありません。'],checks:{}};
+
+ const {num,palm,theme,q,ir}=ctx;
+ checks.birth=Number.isInteger(num)&&num>=1&&num<=9;
+ if(!checks.birth)issues.push('生年月日コアが不正');
+
+ checks.palm=!!(palm?.life&&palm?.head&&palm?.heart);
+ if(!checks.palm)issues.push('主要3線データが不足');
+
+ checks.quality=palm?.gate?.status!=='REJECT';
+ if(!checks.quality)issues.push('画像品質ゲートREJECTの結果を鑑定に使用');
+
+ const expectedIntent=consultationIntent(q,theme);
+ const deep=pd.sections.find(x=>x.title.includes('深掘り'));
+ checks.intent=!!deep&&deep.title.includes(expectedIntent);
+ if(!checks.intent)issues.push('相談分類と深掘りテーマが不一致');
+
+ const detail=pd.sections.map(x=>x.text).join(' ');
+ checks.lineValues=['生命線','知能線','感情線'].every(k=>detail.includes(k));
+ if(!checks.lineValues)issues.push('主要3線への言及が不足');
+
+ checks.theme=detail.includes(theme)||pd.headline.includes(theme);
+ if(!checks.theme)issues.push('選択テーマが最終鑑定へ反映されていない');
+
+ checks.consultation=!q?.trim()||pd.sections.some(x=>x.title.includes('相談')&&x.text.includes(q.replace(/[<>]/g,'').trim()));
+ if(!checks.consultation)issues.push('入力相談文との接続が弱い');
+
+ checks.safety=/保証|参考情報|娯楽/.test(pd.disclaimer||'');
+ if(!checks.safety)issues.push('注意書きが不足');
+
+ const vals=Object.values(checks),overall=vals.filter(Boolean).length/Math.max(1,vals.length);
+ return {time:new Date().toISOString(),overall:+overall.toFixed(3),theme,intent:expectedIntent,
+  palmGate:palm?.gate?.status||'unknown',checks,issues};
+}
+function runIntegratedQA(){
+ const box=document.getElementById('integratedQaResult');
+ if(!lastReadingContext||!lastPaidReading){box.textContent='先に鑑定を1回実行してください。';return}
+ const q=evaluateIntegratedReading(lastReadingContext,lastPaidReading);
+ integratedQaHistory.push(q);
+ const rows=Object.entries(q.checks).map(([k,v])=>`${v?'✓':'×'} ${k}`).join(' / ');
+ box.innerHTML=`<p><b>総合整合性：${Math.round(q.overall*100)}%</b></p>
+ <p>${rows}</p><p>画像品質：${q.palmGate} / 相談分類：${q.intent}</p>
+ <p>${q.issues.length?'要確認：'+q.issues.join('、'):'主要な整合性チェックはPASS'}</p>`;
+}
+document.getElementById('integratedQaRun')?.addEventListener('click',runIntegratedQA);
+document.getElementById('integratedQaExport')?.addEventListener('click',()=>{
+ if(!integratedQaHistory.length){alert('総合QA結果がありません。');return}
+ const blob=new Blob([JSON.stringify({schema:'fortune-integrated-qa-v1',history:integratedQaHistory},null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='fortune_integrated_qa.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+
+let textQaHistory=[];
+function tokenizeJP(text){
+ return text.replace(/[。、！？「」『』（）・]/g,' ').split(/\s+/).filter(Boolean);
+}
+function sentenceList(text){
+ return text.split(/[。！？]/).map(x=>x.trim()).filter(x=>x.length>5);
+}
+function similarity(a,b){
+ const A=new Set(tokenizeJP(a)),B=new Set(tokenizeJP(b));
+ if(!A.size||!B.size)return 0;
+ let hit=0;A.forEach(x=>{if(B.has(x))hit++});
+ return hit/Math.max(A.size,B.size);
+}
+function evaluatePaidText(pd){
+ const texts=pd.sections.map(x=>x.text),full=texts.join(' ');
+ const chars=full.length,sents=sentenceList(full);
+ let maxDup=0,dupPair=null;
+ for(let i=0;i<sents.length;i++)for(let j=i+1;j<sents.length;j++){
+  const v=similarity(sents[i],sents[j]);if(v>maxDup){maxDup=v;dupPair=[i,j]}
+ }
+ const numeric=(full.match(/[0-9０-９]+/g)||[]).length;
+ const personal=(full.match(/生命線|知能線|感情線|生年月日|相談|今回|テーマ/g)||[]).length;
+ const sectionScore=Math.min(1,pd.sections.length/7);
+ const lengthScore=Math.min(1,chars/900);
+ const duplicateScore=Math.max(0,1-maxDup);
+ const specificityScore=Math.min(1,(numeric+personal)/14);
+ const disclaimerScore=/保証|参考情報|娯楽/.test(pd.disclaimer||'')?1:0;
+ const overall=(lengthScore*.20+duplicateScore*.25+specificityScore*.25+sectionScore*.20+disclaimerScore*.10);
+ const warnings=[];
+ if(chars<650)warnings.push('文章量が少なめ');
+ if(maxDup>.55)warnings.push('似た表現の重複が多い');
+ if(specificityScore<.55)warnings.push('個別解析値への言及が少ない');
+ if(pd.sections.length<7)warnings.push('必要セクション不足');
+ return {time:new Date().toISOString(),overall:+overall.toFixed(3),characters:chars,sentences:sents.length,
+  scores:{length:+lengthScore.toFixed(3),duplicate:+duplicateScore.toFixed(3),specificity:+specificityScore.toFixed(3),structure:+sectionScore.toFixed(3),disclaimer:disclaimerScore},
+  maxSentenceSimilarity:+maxDup.toFixed(3),warnings};
+}
+
+function sentenceKey(s){
+ return s.replace(/[0-9０-９]+/g,'#').replace(/\s+/g,'').slice(0,42);
+}
+function refinePaidText(pd){
+ const before=evaluatePaidText(pd);
+ const seen=[];
+ const sections=pd.sections.map((sec,idx)=>{
+  let sentences=sentenceList(sec.text),kept=[];
+  sentences.forEach(sentence=>{
+   const duplicate=seen.some(prev=>similarity(prev,sentence)>.58);
+   if(!duplicate){kept.push(sentence);seen.push(sentence)}
+  });
+  let text=kept.map(x=>x+'。').join('');
+  // If deduplication made a section too thin, add a section-specific concrete observation.
+  if(text.length<85){
+   const supplements=[
+    'この項目は単独で決めつけず、ほかの線とのバランスも合わせて読みます。',
+    '今回の数値差は優劣ではなく、どの判断パターンを使いやすいかを見る材料です。',
+    '実際の行動では、一度に結論を出さず、小さく確認してから次へ進む使い方ができます。',
+    '相談内容と現実に起きている事実を分けて考えると、結果を自己理解に使いやすくなります。'
+   ];
+   text+=' '+supplements[idx%supplements.length];
+  }
+  return {...sec,text};
+ });
+ const refined={...pd,sections};
+ const after=evaluatePaidText(refined);
+ // Never silently replace with a worse QA result.
+ const accepted=after.overall>=before.overall;
+ return {accepted,result:accepted?refined:pd,before,after};
+}
+function renderTextQA(q,prefix='文章QA'){
+ const box=document.getElementById('textQaResult');
+ box.innerHTML=`<p><b>${prefix}：${Math.round(q.overall*100)}%</b></p>
+ <p>文章量 ${q.characters}文字 / 重複抑制 ${Math.round(q.scores.duplicate*100)}% / 個別性 ${Math.round(q.scores.specificity*100)}% / 構成 ${Math.round(q.scores.structure*100)}%</p>
+ <p>${q.warnings.length?'改善候補：'+q.warnings.join('、'):'主要チェックはPASS'}</p>`;
+}
+function runTextRefine(){
+ const box=document.getElementById('textQaResult');
+ if(!lastPaidReading){box.textContent='先に鑑定を1回実行してください。';return}
+ const r=refinePaidText(lastPaidReading);
+ if(r.accepted)lastPaidReading=r.result;
+ textQaHistory.push({time:new Date().toISOString(),type:'refine',accepted:r.accepted,before:r.before,after:r.after});
+ box.innerHTML=`<p><b>文章リファイン：${r.accepted?'採用':'元文章を維持'}</b></p>
+ <p>QA ${Math.round(r.before.overall*100)}% → ${Math.round(r.after.overall*100)}%</p>
+ <p>重複抑制 ${Math.round(r.before.scores.duplicate*100)}% → ${Math.round(r.after.scores.duplicate*100)}% /
+ 個別性 ${Math.round(r.before.scores.specificity*100)}% → ${Math.round(r.after.scores.specificity*100)}%</p>`;
+}
+document.getElementById('textRefineRun')?.addEventListener('click',runTextRefine);
+
+function runTextQA(){
+ const box=document.getElementById('textQaResult');
+ if(!lastPaidReading){box.textContent='先に鑑定を1回実行してください。';return}
+ const q=evaluatePaidText(lastPaidReading);textQaHistory.push(q);renderTextQA(q);
+}
+document.getElementById('textQaRun')?.addEventListener('click',runTextQA);
+document.getElementById('textQaExport')?.addEventListener('click',()=>{
+ if(!textQaHistory.length){alert('文章QA結果がありません。');return}
+ const blob=new Blob([JSON.stringify({schema:'fortune-text-qa-v1',history:textQaHistory},null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='fortune_text_qa.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+
+function consultationIntent(q,theme){
+ const t=(q||'').toLowerCase();
+ const rules=[
+  ['復縁',['復縁','元彼','元カレ','元彼女','別れた']],
+  ['片思い',['片思い','好きな人','脈','告白']],
+  ['結婚',['結婚','婚約','夫婦','プロポーズ']],
+  ['転職',['転職','退職','仕事を辞め','会社を辞め']],
+  ['昇進',['昇進','昇格','評価','出世']],
+  ['独立',['独立','起業','副業','開業']],
+  ['貯蓄',['貯金','貯蓄','節約','家計']],
+  ['投資',['投資','株','fx','仮想通貨','資産運用']],
+  ['購入',['買う','購入','ローン','車','家']],
+  ['人間関係',['人間関係','友人','家族','上司','同僚']]
+ ];
+ for(const [intent,words] of rules) if(words.some(w=>t.includes(w))) return intent;
+ return theme==='恋愛'||theme==='相性'?'関係性':theme==='仕事'?'仕事全般':theme==='金運'?'お金全般':'総合';
+}
+function detailedThemeRule(theme,intent,c,b){
+ const balance=c.heart-c.head, stamina=c.life, thinking=c.head, emotion=c.heart;
+ const mode=thinking>emotion+.08?'考えてから動く傾向':emotion>thinking+.08?'気持ちが先に動きやすい傾向':'感情と判断を行き来する傾向';
+ const base={
+  '恋愛':`恋愛面では${mode}として読みます。感情線${Math.round(emotion*100)}、知能線${Math.round(thinking*100)}の差を、相手との距離の取り方や伝え方を考える材料にします。`,
+  '相性':`相性では感情線と知能線の差を「会話のテンポ」の違いとして読みます。相手の結果がない段階では、相手の性格を断定せず、あなた側の関わり方に限定して読みます。`,
+  '仕事':`仕事面では知能線${Math.round(thinking*100)}と生命線${Math.round(stamina*100)}を軸に、判断の仕方と継続ペースを読みます。`,
+  '金運':`金運では知能線${Math.round(thinking*100)}を意思決定、生命線${Math.round(stamina*100)}を継続管理の傾向として扱います。具体的な利益や価格上昇は予言しません。`,
+  '総合':`全体では3本線のバランスと生年月日の「${b.keywords.join('・')}」を重ね、どこに力を配分しやすいかを読みます。`
+ }[theme]||'';
+ const intentRules={
+  '復縁':'復縁は相手の意思を予測せず、「連絡する理由」「以前と変えられる点」「返事がない場合の境界」を整理する読みを中心にします。',
+  '片思い':'片思いは脈あり判定ではなく、気持ちを伝える前に相手との実際の交流量と、自分が期待していることを分けて整理します。',
+  '結婚':'結婚は時期の断定より、生活・お金・家族・仕事について話し合える状態かを確認する読みを中心にします。',
+  '転職':'転職は成功の断定ではなく、辞めたい理由と次で得たい条件を分け、判断基準を先に作る読みを中心にします。',
+  '昇進':'昇進は結果予測ではなく、評価されている行動と自分が伸ばしたい役割を分けて考える読みを中心にします。',
+  '独立':'独立・副業は成功予測ではなく、固定費、検証期間、撤退条件を決めて小さく試す視点を加えます。',
+  '貯蓄':'貯蓄は金額の予言ではなく、先取り・固定費・使途別管理など継続できる仕組みに落とす視点を加えます。',
+  '投資':'投資については売買判断や利益を占いで決めず、許容損失・期間・撤退条件を事前に決める自己管理の観点だけを扱います。',
+  '購入':'大きな購入は「欲しい理由」「総支払額」「維持費」「見送る条件」を分けて考える視点を加えます。',
+  '人間関係':'人間関係は相手の本心を断定せず、事実として起きたことと自分の解釈を分ける読みを中心にします。',
+  '関係性':'関係性では相手の気持ちを断定せず、あなた自身の伝え方と距離感を中心に読みます。',
+  '仕事全般':'仕事全般では得意な判断パターンと疲れやすい進め方を分けて読みます。',
+  'お金全般':'お金全般では未来の金額ではなく、判断と管理のクセを自己理解の材料として読みます。',
+  '総合':'総合では一つの結論に寄せず、強く出た要素と控えめな要素の両方を扱います。'
+ };
+ return {base,intentText:intentRules[intent]||intentRules['総合'],mode,balance:+balance.toFixed(3)};
+}
+
+let lastPaidReading=null;
+let lastReadingContext=null;
+let integratedQaHistory=[];
+function paidDetail(ir,palm,theme,q){
+ const c=ir.components,b=ir.birth;
+ const intent=consultationIntent(q,theme),dr=detailedThemeRule(theme,intent,c,b);
+ const order=[['生命線',c.life],['知能線',c.head],['感情線',c.heart]].sort((a,z)=>z[1]-a[1]);
+ const strong=order[0][0],weak=order[2][0],safeQ=(q||'').replace(/[<>]/g,'').trim();
+ const strength=`${strong}が3本の中で最も強く出ています。生年月日の「${b.keywords.join('・')}」という性質と合わせると、得意なやり方を自覚して使うほど判断がまとまりやすいタイプとして読みます。`;
+ const caution=`一方で${weak}は相対的に控えめです。弱点と断定するのではなく、${strong}だけで決めず、一度立ち止まって別の視点を加える余地がある、という読みです。`;
+ const themeMap={
+  '恋愛':`恋愛では感情線を中心に、知能線とのバランスを見ます。気持ちを察することと、実際に言葉で確かめることを分けると、思い込みによるすれ違いを減らしやすいでしょう。`,
+  '相性':`相性では「合う・合わない」の断定より、感情の伝え方と判断のテンポを見る読みです。相手との違いが出た時に、どちらが正しいかではなく、確認の仕方を合わせることがポイントです。`,
+  '仕事':`仕事では知能線を軸に、生命線の継続性を重ねて見ます。大きな目標を一度に追うより、判断基準を決めて小さく検証し、結果を見て修正する進め方が活かしやすいでしょう。`,
+  '金運':`金運では予言的な金額ではなく、判断傾向として読みます。支出・投資・大きな買い物は、その場の感情より先に上限や撤退条件を数字で決めておくと、自分の判断を保ちやすいでしょう。`,
+  '総合':`総合では3本線の偏りと生年月日の性質をまとめて見ます。強く出た部分を軸にしつつ、控えめな部分を意識的に補うことが、全体のバランスを取りやすい読みです。`
+ };
+ const consult=safeQ?`ご相談「${safeQ}」は「${intent}」に近い相談として整理しました。${dr.intentText} そのうえで「自分で変えられること」「相手や環境次第のこと」「今すぐ決めなくてよいこと」の3つに分け、今回強く出た${strong}の長所を最初の一手に使う読みです。`:
+ `相談文が未入力のため、今回は${theme}全体の読みを中心にしています。具体的な悩みを入力すると、その内容に沿った補足を加えられます。`;
+ const action=`今後の行動ヒントは、①判断した理由を一言で残す、②一度に変えることを1つに絞る、③結果を見て次の行動を決める、の3段階です。占いを「答え」ではなく、自分の考えを整理する材料として使う設計です。`;
+ const lines=[
+  `生命線：継続・生活ペースの指標 ${Math.round(c.life*100)}/100。`,
+  `知能線：考え方・判断の指標 ${Math.round(c.head*100)}/100。`,
+  `感情線：感情表現・対人傾向の指標 ${Math.round(c.heart*100)}/100。`
+ ];
+ const paidResult={headline:`${theme}・総合詳細鑑定`,sections:[
+  {title:'現在の状態',text:`今回の統合指標は${Math.round(ir.score*100)}/100で、「${ir.band}」の読みです。${themeMap[theme]||themeMap['総合']}`},
+  {title:'あなたの強み',text:strength},
+  {title:'注意したい点',text:caution},
+  {title:'主要3線の詳細',text:lines.join(' ')},
+  {title:`${theme}の深掘り：${intent}`,text:`${dr.base} ${dr.intentText}`},
+  {title:'相談内容への読み',text:consult},
+  {title:'行動ヒント',text:action}
+ ],disclaimer:'この詳細鑑定は娯楽・自己理解の参考情報であり、将来・健康・金銭的成果などを保証するものではありません。'};
+ lastPaidReading=paidResult; return paidResult;
+}
+function narrativeEngine(num,palm,theme,q){
+ const ir=integratedReading(num,palm,theme), b=ir.birth, c=ir.components;
+ const dominant=[['生命線',c.life],['知能線',c.head],['感情線',c.heart]].sort((a,b)=>b[1]-a[1]);
+ const strong=dominant[0][0], weak=dominant[2][0];
+ const intro=`あなたの鑑定では、生年月日から出る「${b.keywords.join('・')}」が土台です。そこへ手相画像を重ねると、今回は${strong}の特徴が比較的強く、${weak}は控えめに出ています。`;
+ let themeText='';
+ if(theme==='恋愛'||theme==='相性'){
+   themeText=c.heart>.62
+    ?'人との距離感を感覚的につかみやすい時。気持ちを察するだけで終わらせず、言葉で確認するほど関係が安定しやすい、という読みです。'
+    :c.head>c.heart
+    ?'恋愛でも感情だけで突っ走るより、相手の言葉や状況を一度整理して判断しやすい読みです。考えすぎて機会を逃さないことがポイントになります。'
+    :'相手に合わせる部分と自分の希望を伝える部分のバランスを意識するとよい、という読みです。';
+ }else if(theme==='仕事'){
+   themeText=c.head>.62
+    ?'仕事では考えを組み立ててから動く力が出やすい読みです。役割が曖昧な場面ほど、優先順位を自分で整理すると持ち味を使いやすくなります。'
+    :'一つの正解に固執するより、小さく試して修正する進め方と相性がよい読みです。';
+ }else if(theme==='金運'){
+   themeText=c.head>.60&&c.life>.50
+    ?'金運は一発の運より、判断と継続を積み重ねる側に強みが出る読みです。大きな判断ほど条件を数字で決めておくとブレを抑えやすくなります。'
+    :'お金に関する判断は勢いよりルールを先に作ることがポイント、という読みです。';
+ }else{
+   themeText=`全体としては「${ir.band}」の読みです。得意な部分をさらに押すより、強く出た${strong}を軸に、控えめな${weak}を補う行動がバランスを取りやすいでしょう。`;
+ }
+ const consult=q?`今回の相談「${q.replace(/[<>]/g,'')}」については、上の傾向を前提に、まず自分で変えられる条件と相手・環境に左右される条件を分けて考えると整理しやすいでしょう。`:'';
+ const caveat='この鑑定は手相・生年月日を用いた娯楽・自己整理のための読みで、将来を保証するものではありません。';
+ return {ir,intro,themeText,consult,caveat,strong,weak};
+}
+function integrate(num,palm,theme,q){
+ if(palm?.qualityGate?.status==='reject'){
+  return `<h2>手相画像を再撮影してください</h2>
+  <p><b>${palm.qualityGate.message}</b></p>
+  <p>品質判定 ${Math.round(palm.qualityGate.score*100)}%</p>
+  <p>${palm.qualityGate.reasons.join(' / ')||'画像条件を確認してください。'}</p>
+  <p>掌全体を正面から、影や白飛びを避けてピントを合わせて撮影してください。</p>`;
+ }
+ const n=narrativeEngine(num,palm,theme,q),ir=n.ir,pct=Math.round(palm.confidence*100);
+ const tokens=palmRuleEngine(palm).filter(x=>x.confidence>=.28);
+ const highlights=tokens.slice(0,3).map(x=>`<li><b>${x.label}</b>：${x.text}</li>`).join('');
+ const free=`${palm.qualityGate?.status==='retry'?`<div class="warn"><b>再撮影推奨：</b>${palm.qualityGate.message}</div>`:''}<h2>${theme}・無料鑑定</h2>
+ <p>${n.intro}</p>
+ <p><b>今回の読み：</b>${n.themeText}</p>
+ ${n.consult?`<p><b>ご相談について：</b>${n.consult}</p>`:''}
+ <h3>手相から拾った3つのポイント</h3><ul>${highlights||'<li>写真の確信度が低いため、主要な読みを絞っています。</li>'}</ul>
+ <p><b>総合指標：</b>${Math.round(ir.score*100)}/100　<span class="small">解析適性 ${pct}%</span></p>
+ <p class="small">${n.caveat}</p>`;
+ let pd=paidDetail(ir,palm,theme,q);
+ lastReadingContext={num,palm,theme,q,ir};
+ const autoGate=finalQualityGate(lastReadingContext,pd);
+ lastFinalGate=autoGate;
+ if(autoGate.status==='PASS'){pd=autoGate.result;lastPaidReading=pd;}
+ const preview=pd.sections.slice(0,2).map((x,i)=>`<div class="paidLockedSection"><h4>${x.title}</h4><p>${i===0?x.text.slice(0,72)+'…':'詳細鑑定で開放されます。'}</p></div>`).join('');
+ const locked=`<div style="margin-top:20px;padding:18px;border:1px solid #ddd;border-radius:14px">
+ <h3>🔒 ${pd.headline}</h3>
+ <p>詳細版は、今回の解析値・テーマ・相談内容からその場で組み立てる個別鑑定です。</p><p class="small">品質ゲート：${lastFinalGate?.status||'未判定'}</p>
+ ${preview}
+ <p class="small">全${pd.sections.length}項目：現在の状態 / 強み / 注意点 / 主要3線 / ${theme}深掘り / 相談への読み / 行動ヒント</p>
+ <button type="button" disabled>詳細鑑定を開く（決済接続前）</button></div>`;
+ return `${free}${locked}<details style="margin-top:18px"><summary>開発用・解析データ</summary>
+ <p>手：${palm.image.hand.resolved==='right'?'右手':palm.image.hand.resolved==='left'?'左手':'判定保留'} / 傾き推定・座標補正 ${palm.image.tilt.degrees}°</p>
+ <p>照明品質 ${Math.round((palm.metrics.lightingScore||0)*100)}% / 平均明度 ${palm.metrics.meanBrightness} / 影率 ${Math.round((palm.metrics.shadowRatio||0)*100)}%</p>
+ <p>スケール品質 ${Math.round((palm.metrics.scaleQuality||0)*100)}% / 掌領域 ${palm.metrics.palmWidth}×${palm.metrics.palmHeight}px / 画面占有 ${Math.round((palm.metrics.frameCoverage||0)*100)}%</p>
+ <p>校正：${palm.image.calibrationMode==='sample'?'実写サンプル校正':'自動汎用'} / 教師データ：${palm.image.learnedModel?.enabled?`${palm.image.learnedModel.samples}件中 ${palm.image.learnedModel.selected}件を近似選択`:'未適用'}</p>
+ <p><b>品質ゲート：${palm.qualityGate.status.toUpperCase()} ${Math.round(palm.qualityGate.score*100)}%</b>${palm.qualityGate.reasons.length?' / '+palm.qualityGate.reasons.join('・'):''}</p>
+ <p>生命線 ${Math.round(palm.life.score*100)}（追跡 ${Math.round(palm.life.coverage*100)}% / 切れ候補 ${palm.life.gapCount} / 分岐候補 ${palm.life.branchPoints.length}）<br>
+ 知能線 ${Math.round(palm.head.score*100)}（追跡 ${Math.round(palm.head.coverage*100)}% / 切れ候補 ${palm.head.gapCount} / 分岐候補 ${palm.head.branchPoints.length}）<br>
+ 感情線 ${Math.round(palm.heart.score*100)}（追跡 ${Math.round(palm.heart.coverage*100)}% / 切れ候補 ${palm.heart.gapCount} / 分岐候補 ${palm.heart.branchPoints.length}）</p>
+ <p>v3.8: 可変価格 → サーバー注文作成 → Stripe Checkout → Webhook決済確認 → 詳細鑑定開放</p></details>`;
+}
+
+
+
+const PRODUCT_DEFAULT={
+ currency:'JPY',price:980,type:'one_time',name:'総合・詳細鑑定',
+ free:['基本傾向','総合スコア','主要3線の要点'],
+ paid:['現在の状態','強み','注意点','テーマ詳細','相談への個別回答','行動ヒント']
+};
+function loadProductConfig(){
+ try{return {...PRODUCT_DEFAULT,...JSON.parse(localStorage.getItem('fortune_product_config_v1')||'{}')}}catch(e){return {...PRODUCT_DEFAULT}}
+}
+let PRODUCT=loadProductConfig();
+function saveProductConfig(){localStorage.setItem('fortune_product_config_v1',JSON.stringify(PRODUCT));}
+
+
+function yen(n){return '¥'+Number(n||0).toLocaleString('ja-JP')}
+function syncProductUI(){
+ const n=document.getElementById('productNameInput'),p=document.getElementById('productPriceInput');
+ if(n)n.value=PRODUCT.name||PRODUCT_DEFAULT.name;
+ if(p){p.value=String(PRODUCT.price);}
+ document.querySelectorAll('[data-product-price]').forEach(x=>x.textContent=yen(PRODUCT.price));
+}
+function updateProductConfig(){
+ const n=(document.getElementById('productNameInput')?.value||'').trim()||PRODUCT_DEFAULT.name;
+ const p=Number(document.getElementById('productPriceInput')?.value||980);
+ PRODUCT={...PRODUCT,name:n,price:p};saveProductConfig();syncProductUI();
+ document.getElementById('productConfigStatus').textContent=`保存：${PRODUCT.name} / ${yen(PRODUCT.price)}`;
+}
+document.getElementById('saveProductConfigBtn')?.addEventListener('click',updateProductConfig);
+setTimeout(syncProductUI,0);
+
+const ORDER_STORE_KEY='fortune_orders_v1';
+function loadOrders(){
+ try{return JSON.parse(localStorage.getItem(ORDER_STORE_KEY)||'[]')}catch(e){return []}
+}
+function saveOrders(v){localStorage.setItem(ORDER_STORE_KEY,JSON.stringify(v))}
+function makeOrderId(){
+ const d=new Date(),stamp=d.toISOString().replace(/\D/g,'').slice(0,14);
+ return `FT-${stamp}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+}
+function readingFingerprint(ctx){
+ const q=(ctx.q||'').trim().toLowerCase();
+ return [ctx.num,ctx.theme,q,ctx.palm?.image?.hand?.resolved||'unknown',
+  Math.round((ctx.ir?.score||0)*1000)].join('|');
+}
+function findExistingOrder(ctx){
+ const fp=readingFingerprint(ctx);
+ return loadOrders().find(o=>o.fingerprint===fp&&o.status==='paid')||null;
+}
+function createPrototypePaidOrder(ctx,pd){
+ const existing=findExistingOrder(ctx);
+ if(existing)return {order:existing,duplicate:true};
+ const order={
+  schema:'fortune-order-v1',orderId:makeOrderId(),status:'paid',
+  product:{name:PRODUCT.name,price:PRODUCT.price,currency:PRODUCT.currency,type:PRODUCT.type},
+  createdAt:new Date().toISOString(),fingerprint:readingFingerprint(ctx),
+  context:{num:ctx.num,theme:ctx.theme,q:ctx.q||'',hand:ctx.palm?.image?.hand?.resolved||'unknown'},
+  reading:pd
+ };
+ const orders=loadOrders();orders.push(order);saveOrders(orders);
+ return {order,duplicate:false};
+}
+function showOrderStatus(order,msg=''){
+ const card=document.getElementById('orderStatusCard'),box=document.getElementById('orderStatusText');
+ if(!card||!box)return;card.style.display='block';
+ box.innerHTML=`<p><b>${msg||'購入済み'}</b></p><p>注文ID：${order.orderId}</p><p>商品：${order.product.name} / ¥${order.product.price}</p>`;
+}
+function restoreLatestPurchase(){
+ const orders=loadOrders().filter(o=>o.status==='paid').sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+ if(!orders.length){alert('この端末に保存された購入済み鑑定はありません。');return}
+ const o=orders[0];
+ showOrderStatus(o,'購入済み鑑定を復元しました');
+ const fakeCtx={num:o.context.num,theme:o.context.theme,q:o.context.q};
+ renderPaidResult(o.reading,fakeCtx,o);
+}
+document.getElementById('restorePurchaseBtn')?.addEventListener('click',restoreLatestPurchase);
+
+function renderPaidResult(pd,ctx,order=null){
+ const page=document.getElementById('paidResultPage'),wrap=document.getElementById('paidResultSections');
+ if(!page||!wrap)return;
+ document.getElementById('paidResultTitle').textContent=pd.headline;
+ document.getElementById('paidResultMeta').textContent=`テーマ：${ctx.theme} / 生年月日コア：${ctx.num}${order?' / 注文ID：'+order.orderId:''} / 品質ゲート：${lastFinalGate?.status||'保存済み'}`;
+ wrap.innerHTML=pd.sections.map((sec,i)=>`<article class="resultSection"><div class="resultIndex">${String(i+1).padStart(2,'0')}</div><h3>${sec.title}</h3><p>${sec.text}</p></article>`).join('');
+ document.getElementById('paidResultDisclaimer').textContent=pd.disclaimer||'';
+ page.style.display='block';page.scrollIntoView({behavior:'smooth',block:'start'});setUserStep(4);
+}
+function unlockPaidResultForTest(){
+ if(!lastReadingContext||!lastPaidReading){alert('先に無料鑑定を実行してください。');return}
+ const gate=finalQualityGate(lastReadingContext,lastPaidReading);lastFinalGate=gate;
+ if(gate.status!=='PASS'){alert(`品質ゲートが${gate.status}のため詳細鑑定を表示できません。`);return}
+ lastPaidReading=gate.result;
+ const saved=createPrototypePaidOrder(lastReadingContext,lastPaidReading);
+ showOrderStatus(saved.order,saved.duplicate?'同じ鑑定は購入済みです（二重購入を防止）':'開発テスト購入を保存しました');
+ renderPaidResult(saved.order.reading,lastReadingContext,saved.order);
+}
+document.getElementById('backToFree')?.addEventListener('click',()=>{
+ const p=document.getElementById('paidResultPage');if(p)p.style.display='none';setUserStep(3);
+ document.getElementById('result')?.scrollIntoView({behavior:'smooth'});
+});
+
+function setUserStep(n){document.querySelectorAll('#steps [data-step]').forEach(el=>el.classList.toggle('active',Number(el.dataset.step)<=n));}
+document.getElementById('paidPreviewBtn')?.addEventListener('click',()=>{document.getElementById('paidPreview').style.display='block';setUserStep(4);});
+document.getElementById('testUnlockBtn')?.addEventListener('click',unlockPaidResultForTest);
+function setAppMode(mode){
+ document.body.classList.remove('userMode','devMode');
+ document.body.classList.add(mode==='dev'?'devMode':'userMode');
+ localStorage.setItem('fortuneAppMode',mode);
+ const u=document.getElementById('userModeBtn'),d=document.getElementById('devModeBtn');
+ if(u)u.disabled=mode!=='dev'; if(d)d.disabled=mode==='dev';
+}
+document.getElementById('userModeBtn')?.addEventListener('click',()=>setAppMode('user'));
+document.getElementById('devModeBtn')?.addEventListener('click',()=>setAppMode('dev'));
+setAppMode(localStorage.getItem('fortuneAppMode')||'user');
+
+let learnedPalmModel={enabled:false,samples:[],priors:{}};
+function sampleDistance(sm,ctx){
+ let d=0;
+ if(sm.hand&&sm.hand!=='unknown'&&ctx.hand!=='unknown'&&sm.hand!==ctx.hand)d+=2.5;
+ const c=sm.capture||{};
+ if(c.orientation&&c.orientation!=='unknown'&&ctx.orientation&&c.orientation!==ctx.orientation)d+=1.0;
+ if(Number.isFinite(c.lighting))d+=Math.abs(c.lighting-ctx.lighting)*.8;
+ if(Number.isFinite(c.scale))d+=Math.abs(c.scale-ctx.scale)*1.5;
+ if(Number.isFinite(c.tilt))d+=Math.min(1,Math.abs(c.tilt-ctx.tilt)/20)*.7;
+ return d;
+}
+function buildContextPriors(samples,ctx){
+ const ranked=samples.map(sm=>({sm,d:sampleDistance(sm,ctx)})).sort((a,b)=>a.d-b.d);
+ const chosen=ranked.filter(x=>x.d<2.25).slice(0,40).map(x=>x.sm);
+ return {chosen,priors:buildLearnedPriors(chosen)};
+}
+
+
+function buildLearnedPriors(samples){
+ const groups={heart:[],head:[],life:[]};
+ samples.forEach(sm=>{if(groups[sm.line]&&Array.isArray(sm.points)&&sm.points.length>=3)groups[sm.line].push(sm.points)});
+ const priors={};
+ Object.entries(groups).forEach(([line,sets])=>{
+  if(!sets.length)return;
+  const bins=24,curve=[];
+  for(let b=0;b<bins;b++){
+   const t=b/(bins-1),pts=[];
+   sets.forEach(set=>{
+    const idx=Math.min(set.length-1,Math.round(t*(set.length-1)));
+    pts.push(set[idx]);
+   });
+   curve.push({
+    x:pts.reduce((a,p)=>a+p.x,0)/pts.length,
+    y:pts.reduce((a,p)=>a+p.y,0)/pts.length
+   });
+  }
+  priors[line]={count:sets.length,curve};
+ });
+ return priors;
+}
+document.getElementById('teacherImport')?.addEventListener('change',async ev=>{
+ const f=ev.target.files?.[0];if(!f)return;
+ try{
+  const obj=JSON.parse(await f.text());
+  if(obj.schema!=='fortune-palm-teacher-v1'||!Array.isArray(obj.samples))throw new Error('schema');
+  learnedPalmModel.samples=obj.samples;
+  learnedPalmModel.priors=buildLearnedPriors(obj.samples);
+  document.getElementById('teacherStatus').textContent=`教師データ ${obj.samples.length}件を読み込みました。`;
+ }catch(e){alert('教師データJSONを読み込めませんでした。')}
+});
+document.getElementById('teacherApply')?.addEventListener('click',()=>{
+ learnedPalmModel.enabled=Object.keys(learnedPalmModel.priors).length>0;
+ document.getElementById('teacherStatus').textContent=learnedPalmModel.enabled
+  ?`学習プロファイル適用中：${learnedPalmModel.samples.length}サンプル`
+  :'適用できる教師データがありません。';
+});
+
+let teacherState={active:false,line:'heart',points:[],samples:[]};
+let lastPalmAnalysis=null;
+
+function teacherCanvasPoint(ev){
+ const c=document.getElementById('analysisPreview'),r=c.getBoundingClientRect();
+ return {x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height};
+}
+function drawTeacherOverlay(){
+ const c=document.getElementById('analysisPreview'); if(!c||!teacherState.points.length)return;
+ const x=c.getContext('2d'); x.save();x.lineWidth=4;x.beginPath();
+ x.moveTo(teacherState.points[0].x,teacherState.points[0].y);
+ for(let i=1;i<teacherState.points.length;i++)x.lineTo(teacherState.points[i].x,teacherState.points[i].y);
+ x.stroke();
+ teacherState.points.forEach(p=>{x.beginPath();x.arc(p.x,p.y,4,0,Math.PI*2);x.stroke()});x.restore();
+}
+function updateTeacherStatus(){
+ const e=document.getElementById('teacherStatus');if(e)e.textContent=
+  `${teacherState.active?'補正中':'待機'} / ${teacherState.line} / ${teacherState.points.length}点 / 保存サンプル ${teacherState.samples.length}`;
+}
+document.getElementById('teacherStart')?.addEventListener('click',()=>{
+ teacherState.active=!teacherState.active;teacherState.line=document.getElementById('teacherLine').value;
+ if(!teacherState.active&&teacherState.points.length>=3&&lastPalmAnalysis){
+  const w=lastPalmAnalysis.image.analysisWidth,h=lastPalmAnalysis.image.analysisHeight;
+  teacherState.samples.push({
+   version:'teacher-v1',line:teacherState.line,
+   source:lastPalmAnalysis.source||'',
+   hand:lastPalmAnalysis.image.hand?.resolved||'unknown',
+   calibration:lastPalmAnalysis.image.calibration,
+   capture:{
+    orientation:lastPalmAnalysis.image.orientation||'unknown',
+    lighting:+(lastPalmAnalysis.metrics?.lightingScore||0).toFixed(3),
+    scale:+(lastPalmAnalysis.metrics?.frameCoverage||0).toFixed(3),
+    tilt:+(lastPalmAnalysis.image?.tilt?.degrees||0).toFixed(2)
+   },
+   points:teacherState.points.map(p=>({x:+(p.x/w).toFixed(5),y:+(p.y/h).toFixed(5)}))
+  });
+ }
+ document.getElementById('teacherStart').textContent=teacherState.active?'補正を保存':'補正開始';updateTeacherStatus();
+});
+document.getElementById('teacherUndo')?.addEventListener('click',()=>{teacherState.points.pop();updateTeacherStatus();});
+document.getElementById('teacherClear')?.addEventListener('click',()=>{teacherState.points=[];updateTeacherStatus();});
+document.getElementById('analysisPreview')?.addEventListener('click',ev=>{
+ if(!teacherState.active)return;teacherState.points.push(teacherCanvasPoint(ev));drawTeacherOverlay();updateTeacherStatus();
+});
+document.getElementById('teacherExport')?.addEventListener('click',()=>{
+ if(!teacherState.samples.length){alert('保存された補正データがありません。');return}
+ const blob=new Blob([JSON.stringify({schema:'fortune-palm-teacher-v1',samples:teacherState.samples},null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='palm_teacher_data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+
+
+let qaHistory=[];
+function nearestTeacherFor(line,palm){
+ const c=learnedPalmModel.samples.filter(sm=>sm.line===line); if(!c.length)return null;
+ const ctx={hand:palm.image.hand?.resolved||'unknown',orientation:palm.image.orientation,lighting:palm.metrics.lightingScore||0,scale:palm.metrics.frameCoverage||0,tilt:palm.image.tilt?.degrees||0};
+ return c.map(sm=>({sm,d:sampleDistance(sm,ctx)})).sort((a,b)=>a.d-b.d)[0].sm;
+}
+function lineQA(line,palm){
+ const gt=nearestTeacherFor(line,palm),pred=palm[line];
+ if(!gt||!pred?.tracePts?.length)return {line,status:'no-reference'};
+ const w=palm.image.analysisWidth,h=palm.image.analysisHeight,truth=gt.points.map(p=>({x:p.x*w,y:p.y*h}));
+ let sum=0,max=0;
+ pred.tracePts.forEach(p=>{let best=Infinity;truth.forEach(q=>best=Math.min(best,Math.hypot(p.x-q.x,p.y-q.y)));sum+=best;max=Math.max(max,best)});
+ const mean=sum/pred.tracePts.length,norm=mean/Math.hypot(w,h),score=clamp(1-norm/.06,0,1);
+ return {line,status:'ok',score:+score.toFixed(3),meanErrorPx:+mean.toFixed(1),maxErrorPx:+max.toFixed(1),normalizedError:+norm.toFixed(4)};
+}
+
+function resampleTruth(points,n=36){
+ if(!points?.length)return [];
+ const out=[];
+ for(let i=0;i<n;i++){const t=i/(n-1),idx=Math.min(points.length-1,Math.round(t*(points.length-1)));out.push(points[idx])}
+ return out;
+}
+function refineLineFromTeacher(line,palm){
+ const gt=nearestTeacherFor(line,palm),pred=palm[line];
+ if(!gt||!pred?.tracePts?.length)return {line,status:'no-reference'};
+ const w=palm.image.analysisWidth,h=palm.image.analysisHeight;
+ const truth=resampleTruth(gt.points.map(p=>({x:p.x*w,y:p.y*h})),Math.max(12,pred.tracePts.length));
+ const refined=[];
+ pred.tracePts.forEach((p,i)=>{
+   const t=i/Math.max(1,pred.tracePts.length-1),q=truth[Math.min(truth.length-1,Math.round(t*(truth.length-1)))];
+   const d=Math.hypot(p.x-q.x,p.y-q.y);
+   // Only correct high-error sections; keep good automatic segments untouched.
+   const alpha=d>Math.hypot(w,h)*.025?.55:d>Math.hypot(w,h)*.012?.28:0;
+   refined.push({x:p.x*(1-alpha)+q.x*alpha,y:p.y*(1-alpha)+q.y*alpha});
+ });
+ pred.tracePtsBeforeRefine=pred.tracePts.map(p=>({x:p.x,y:p.y}));
+ pred.tracePts=refined;
+ if(refined.length>1){
+  pred.startPoint={x:refined[0].x,y:refined[0].y};pred.endPoint={x:refined.at(-1).x,y:refined.at(-1).y};
+  pred.correctedDirection=Math.atan2(pred.endPoint.y-pred.startPoint.y,pred.endPoint.x-pred.startPoint.x)*180/Math.PI;
+ }
+ return {line,status:'refined'};
+}
+function autoRefineQA(){
+ const b=document.getElementById('qaResult');
+ if(!lastPalmAnalysis){b.textContent='先に手相写真を解析してください。';return}
+ const before=['heart','head','life'].map(k=>lineQA(k,lastPalmAnalysis));
+ const changed=['heart','head','life'].map(k=>refineLineFromTeacher(k,lastPalmAnalysis));
+ const after=['heart','head','life'].map(k=>lineQA(k,lastPalmAnalysis));
+ const validBefore=before.filter(x=>x.status==='ok'),validAfter=after.filter(x=>x.status==='ok');
+ const bScore=validBefore.length?validBefore.reduce((a,x)=>a+x.score,0)/validBefore.length:null;
+ const aScore=validAfter.length?validAfter.reduce((a,x)=>a+x.score,0)/validAfter.length:null;
+ qaHistory.push({time:new Date().toISOString(),source:lastPalmAnalysis.source,type:'auto-refine',before:bScore,after:aScore,linesBefore:before,linesAfter:after});
+ b.innerHTML=`<p><b>自動再探索：${bScore===null?'評価不能':Math.round(bScore*100)+'%'} → ${aScore===null?'評価不能':Math.round(aScore*100)+'%'}</b></p>`+
+ after.map(x=>x.status==='ok'?`<p>${x.line}：${Math.round(x.score*100)}% / 平均誤差 ${x.meanErrorPx}px</p>`:`<p>${x.line}：教師データなし</p>`).join('');
+}
+document.getElementById('qaRefine')?.addEventListener('click',autoRefineQA);
+
+function runQA(){
+ const b=document.getElementById('qaResult');if(!lastPalmAnalysis){b.textContent='先に手相写真を解析してください。';return}
+ const lines=['heart','head','life'].map(k=>lineQA(k,lastPalmAnalysis)),v=lines.filter(x=>x.status==='ok');
+ const overall=v.length?v.reduce((a,x)=>a+x.score,0)/v.length:null,n={heart:'感情線',head:'知能線',life:'生命線'};
+ qaHistory.push({time:new Date().toISOString(),source:lastPalmAnalysis.source,overall,lines});
+ b.innerHTML=`<p><b>総合精度：${overall===null?'評価不能':Math.round(overall*100)+'%'}</b></p>`+lines.map(x=>x.status==='ok'?`<p>${n[x.line]}：${Math.round(x.score*100)}% / 平均誤差 ${x.meanErrorPx}px / 最大誤差 ${x.maxErrorPx}px</p>`:`<p>${n[x.line]}：正解教師データなし</p>`).join('');
+}
+document.getElementById('qaRun')?.addEventListener('click',runQA);
+document.getElementById('qaExport')?.addEventListener('click',()=>{
+ if(!qaHistory.length){alert('QA結果がありません。');return}
+ const blob=new Blob([JSON.stringify({schema:'fortune-palm-qa-v1',history:qaHistory},null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='palm_qa_results.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+
+async function fortune(){
+ const b=document.getElementById('birth').value,f=document.getElementById('palm').files[0],
+ t=document.getElementById('theme').value,q=document.getElementById('question').value,r=document.getElementById('result');
+ if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
+ r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
+ try{
+  const num=birthCore(b),palm=await palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto');
+ lastPalmAnalysis=palm;teacherState.points=[];teacherState.active=false;updateTeacherStatus();
+  r.innerHTML=integrate(num,palm,t,q);
+ }catch(e){r.innerHTML='<p>画像解析に失敗しました。別の写真で試してください。</p>'}
+}
+
+async function startStripeCheckout(){
+ if(!lastReadingContext||!lastPaidReading){alert('先に無料鑑定を実行してください。');return}
+ const gate=finalQualityGate(lastReadingContext,lastPaidReading);lastFinalGate=gate;
+ if(gate.status!=='PASS'){alert(`品質ゲートが${gate.status}のため購入へ進めません。`);return}
+ try{
+  const r=await fetch('/api/create-checkout-session',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({
+    productKey:'detail_reading',
+    readingFingerprint:readingFingerprint(lastReadingContext),
+    reading:lastPaidReading,
+    context:{num:lastReadingContext.num,theme:lastReadingContext.theme,q:lastReadingContext.q||''}
+   })
+  });
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.error||'checkout error');
+  location.href=data.url;
+ }catch(e){alert('決済画面を開始できませんでした：'+e.message)}
+}
+document.getElementById('stripeCheckoutBtn')?.addEventListener('click',startStripeCheckout);
+
+</script>
+</main></body></html>
