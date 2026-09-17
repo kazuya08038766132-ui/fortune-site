@@ -1091,6 +1091,428 @@ main{
     z-index:5;
   }
 }
+ /* ==================================================
+   CELESTIAL HERO V3
+   3枚目を基準 / Mobile First
+================================================== */
+
+/* 星雲のある深い夜空 */
+.fortuneHeader{
+  background:
+    radial-gradient(ellipse at 52% 22%,
+      rgba(34,86,166,.38) 0%,
+      rgba(27,48,120,.22) 25%,
+      transparent 48%),
+    radial-gradient(ellipse at 75% 55%,
+      rgba(111,49,157,.34) 0%,
+      transparent 46%),
+    radial-gradient(ellipse at 20% 62%,
+      rgba(37,76,145,.30) 0%,
+      transparent 42%),
+    radial-gradient(circle at 50% 45%,
+      #17245a 0%,
+      #0b153c 40%,
+      #050a22 72%,
+      #020617 100%) !important;
+}
+
+/* 細かい星を追加 */
+.fortuneHeader::before{
+  content:
+  "✦ · ･ ✧ · ✦ ･ · ✧ ･ ✦ · ･ ✦ · ✧ ･ · ✦ ･ ✧ · ･ ✦ · ✧ ･ ✦";
+  position:absolute;
+  z-index:1;
+  inset:85px 0 auto 0;
+  width:100%;
+  color:#fff4c7;
+  font-size:11px;
+  line-height:7;
+  letter-spacing:15px;
+  opacity:.82;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 10px #ffd77d,
+    0 0 20px #8e7dff;
+}
+
+/* ===== 月 ===== */
+
+.heroMoon{
+  z-index:1 !important;
+  width:320px;
+  height:320px;
+  left:-125px;
+  top:85px;
+
+  background:
+    radial-gradient(circle at 35% 30%,
+      rgba(255,248,205,.95),
+      #e8c36f 35%,
+      #aa7436 72%,
+      #674325 100%);
+
+  box-shadow:
+    inset -18px -15px 30px rgba(69,34,39,.32),
+    inset 18px 15px 30px rgba(255,247,190,.25),
+    0 0 18px rgba(255,226,137,.9),
+    0 0 55px rgba(224,179,91,.45),
+    0 0 110px rgba(117,93,220,.28);
+
+  overflow:hidden;
+}
+
+/* 月面っぽい質感 */
+.heroMoon::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  opacity:.38;
+  background:
+    radial-gradient(circle at 25% 32%,#7d5738 0 5%,transparent 6%),
+    radial-gradient(circle at 58% 20%,#8c623d 0 7%,transparent 8%),
+    radial-gradient(circle at 39% 64%,#8b603c 0 9%,transparent 10%),
+    radial-gradient(circle at 72% 58%,#704b35 0 6%,transparent 7%),
+    radial-gradient(circle at 18% 72%,#76503a 0 5%,transparent 6%);
+}
+
+/* 三日月を作る夜空の影 */
+.heroMoon::after{
+  content:"";
+  position:absolute;
+  width:305px;
+  height:305px;
+  left:105px;
+  top:-45px;
+  border-radius:50%;
+  background:#07102d;
+  box-shadow:
+    -10px 8px 18px rgba(14,25,67,.6);
+}
+
+/* ===== 本格的な占星術盤 ===== */
+
+.zodiacCircle{
+  z-index:1;
+  width:460px;
+  height:460px;
+  right:-125px;
+  top:50px;
+
+  border:1px solid rgba(242,202,105,.85);
+  opacity:.86;
+
+  background:
+    radial-gradient(circle,
+      rgba(255,218,121,.08) 0 2%,
+      transparent 3% 25%,
+      rgba(229,188,92,.07) 26% 27%,
+      transparent 28% 45%,
+      rgba(229,188,92,.05) 46% 47%,
+      transparent 48%);
+
+  box-shadow:
+    0 0 0 18px rgba(226,185,90,.05),
+    0 0 0 48px rgba(226,185,90,.025),
+    0 0 40px rgba(255,210,100,.16);
+
+  animation:zodiacRotate 120s linear infinite;
+}
+
+/* 複数リング */
+.zodiacCircle::before{
+  inset:32px;
+  border:
+    1px solid rgba(239,199,102,.78);
+  box-shadow:
+    0 0 0 35px rgba(218,178,82,.035),
+    0 0 0 36px rgba(239,199,102,.48),
+    0 0 0 73px rgba(218,178,82,.02),
+    0 0 0 74px rgba(239,199,102,.32);
+}
+
+.zodiacCircle::after{
+  inset:112px;
+  border:1px solid rgba(244,207,116,.72);
+  border-style:solid;
+}
+
+/* 十二星座 */
+.zodiacSigns{
+  position:absolute;
+  inset:0;
+}
+
+.zodiacSigns span{
+  position:absolute;
+  left:50%;
+  top:50%;
+  color:#f7d983;
+  font-size:24px;
+  text-shadow:
+    0 0 7px rgba(255,224,136,.75);
+  transform-origin:0 0;
+}
+
+.zodiacSigns span:nth-child(1){
+  transform:rotate(0deg) translateY(-190px) rotate(0deg);
+}
+.zodiacSigns span:nth-child(2){
+  transform:rotate(30deg) translateY(-190px) rotate(-30deg);
+}
+.zodiacSigns span:nth-child(3){
+  transform:rotate(60deg) translateY(-190px) rotate(-60deg);
+}
+.zodiacSigns span:nth-child(4){
+  transform:rotate(90deg) translateY(-190px) rotate(-90deg);
+}
+.zodiacSigns span:nth-child(5){
+  transform:rotate(120deg) translateY(-190px) rotate(-120deg);
+}
+.zodiacSigns span:nth-child(6){
+  transform:rotate(150deg) translateY(-190px) rotate(-150deg);
+}
+.zodiacSigns span:nth-child(7){
+  transform:rotate(180deg) translateY(-190px) rotate(-180deg);
+}
+.zodiacSigns span:nth-child(8){
+  transform:rotate(210deg) translateY(-190px) rotate(-210deg);
+}
+.zodiacSigns span:nth-child(9){
+  transform:rotate(240deg) translateY(-190px) rotate(-240deg);
+}
+.zodiacSigns span:nth-child(10){
+  transform:rotate(270deg) translateY(-190px) rotate(-270deg);
+}
+.zodiacSigns span:nth-child(11){
+  transform:rotate(300deg) translateY(-190px) rotate(-300deg);
+}
+.zodiacSigns span:nth-child(12){
+  transform:rotate(330deg) translateY(-190px) rotate(-330deg);
+}
+
+/* 中央の星 */
+.zodiacInner{
+  inset:135px;
+  border:1px solid rgba(242,203,107,.65);
+  background:
+    radial-gradient(circle,
+      rgba(255,218,107,.15),
+      transparent 68%);
+}
+
+.zodiacStar{
+  color:#ffe19a;
+  font-size:90px;
+  text-shadow:
+    0 0 8px #fff2ba,
+    0 0 25px #ffc94e,
+    0 0 55px rgba(255,196,63,.65);
+}
+
+/* ===== 流れ星 ===== */
+
+.shootingStars i{
+  width:190px;
+  height:2px;
+  left:-220px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,226,146,.15) 25%,
+      rgba(255,237,179,.55) 70%,
+      #fff 100%
+    );
+
+  box-shadow:
+    5px 0 8px #fff,
+    5px 0 15px #ffd76f;
+
+  transform:rotate(22deg);
+  transform-origin:right center;
+
+  animation:shootCorrect 18s linear infinite;
+}
+
+.shootingStars i:nth-child(2){
+  top:28%;
+  animation-delay:10s;
+  animation-duration:25s;
+}
+
+@keyframes shootCorrect{
+  0%,80%{
+    opacity:0;
+    transform:translate(-100px,-50px) rotate(22deg);
+  }
+
+  81%{
+    opacity:1;
+  }
+
+  87%{
+    opacity:1;
+    transform:translate(1200px,520px) rotate(22deg);
+  }
+
+  88%,100%{
+    opacity:0;
+    transform:translate(1200px,520px) rotate(22deg);
+  }
+}
+
+/* ==================================================
+   SMARTPHONE
+================================================== */
+
+@media(max-width:760px){
+
+  .fortuneHeader{
+    min-height:1180px;
+  }
+
+  .fortuneHero{
+    box-sizing:border-box;
+    min-height:1090px;
+    width:100%;
+    padding:0 16px 45px;
+    overflow:hidden;
+  }
+
+  /* 月 */
+  .heroMoon{
+    width:270px;
+    height:270px;
+    left:-145px;
+    top:65px;
+  }
+
+  .heroMoon::after{
+    width:260px;
+    height:260px;
+    left:88px;
+    top:-37px;
+  }
+
+  /* 魔法陣 */
+  .zodiacCircle{
+    width:330px;
+    height:330px;
+    right:-165px;
+    top:65px;
+  }
+
+  .zodiacCircle::before{
+    inset:25px;
+  }
+
+  .zodiacCircle::after{
+    inset:80px;
+  }
+
+  .zodiacSigns span{
+    font-size:17px;
+  }
+
+  .zodiacSigns span:nth-child(1){transform:rotate(0deg) translateY(-137px)}
+  .zodiacSigns span:nth-child(2){transform:rotate(30deg) translateY(-137px) rotate(-30deg)}
+  .zodiacSigns span:nth-child(3){transform:rotate(60deg) translateY(-137px) rotate(-60deg)}
+  .zodiacSigns span:nth-child(4){transform:rotate(90deg) translateY(-137px) rotate(-90deg)}
+  .zodiacSigns span:nth-child(5){transform:rotate(120deg) translateY(-137px) rotate(-120deg)}
+  .zodiacSigns span:nth-child(6){transform:rotate(150deg) translateY(-137px) rotate(-150deg)}
+  .zodiacSigns span:nth-child(7){transform:rotate(180deg) translateY(-137px) rotate(-180deg)}
+  .zodiacSigns span:nth-child(8){transform:rotate(210deg) translateY(-137px) rotate(-210deg)}
+  .zodiacSigns span:nth-child(9){transform:rotate(240deg) translateY(-137px) rotate(-240deg)}
+  .zodiacSigns span:nth-child(10){transform:rotate(270deg) translateY(-137px) rotate(-270deg)}
+  .zodiacSigns span:nth-child(11){transform:rotate(300deg) translateY(-137px) rotate(-300deg)}
+  .zodiacSigns span:nth-child(12){transform:rotate(330deg) translateY(-137px) rotate(-330deg)}
+
+  .zodiacInner{
+    inset:97px;
+  }
+
+  .zodiacStar{
+    font-size:55px;
+  }
+
+  /* 3枚目と同じく上部装飾の下へタイトル */
+  .heroStars{
+    padding-top:155px;
+    position:relative;
+    z-index:5;
+  }
+
+  .heroLead{
+    position:relative;
+    z-index:6;
+    margin-top:62px;
+    font-size:14px;
+  }
+
+  .fortuneHero .heroTitle{
+    position:relative;
+    z-index:6;
+    font-size:58px;
+    white-space:nowrap;
+    margin-top:16px;
+  }
+
+  .heroCopy{
+    position:relative;
+    z-index:6;
+    font-size:17px;
+  }
+
+  .heroEnglish{
+    position:relative;
+    z-index:6;
+    font-size:8px;
+  }
+
+  .heroCta{
+    position:relative;
+    z-index:7;
+    width:100%;
+    max-width:390px;
+  }
+
+  /* 占い師を右側に見せる */
+  .readerWrap{
+    z-index:4;
+    width:305px;
+    right:-38px;
+    bottom:25px;
+    opacity:.82;
+  }
+
+  .readerGlow{
+    width:115px;
+    height:115px;
+    left:40px;
+    top:150px;
+  }
+
+  /* 4運勢 */
+  .heroFortunes{
+    position:relative;
+    z-index:7;
+    width:100%;
+    max-width:380px;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+    margin-top:42px;
+  }
+
+  .heroFortunes > div{
+    background:
+      radial-gradient(circle,
+        rgba(61,38,111,.50),
+        rgba(5,10,37,.94) 70%);
+    backdrop-filter:blur(4px);
+  }
+}
 </style>
 </head>
 <body>
