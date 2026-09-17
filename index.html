@@ -2801,6 +2801,143 @@ async function palmFeatures(file,handSide='auto',calibrationMode='auto'){
  const palmBox=palmSkinN>20?{x0:minPX,x1:maxPX,y0:minPY,y1:maxPY}:{x0:roi.x0,x1:roi.x1,y0:roi.y0,y1:roi.y1};
  const palmW=Math.max(1,palmBox.x1-palmBox.x0),palmH=Math.max(1,palmBox.y1-palmBox.y0);
  const palmScale=Math.sqrt(palmW*palmH);
+ /* ===== PALM STRUCTURE MODEL v1 =====
+   シワを探す前に、手そのものの向きと基準座標を作る
+=================================== */
+
+const skinPoints=[];
+
+for(let y=roi.y0;y<roi.y1;y+=3){
+  for(let x=roi.x0;x<roi.x1;x+=3){
+
+    const i=(y*w+x)*4;
+    const r=d[i], g=d[i+1], b=d[i+2];
+    const mx=Math.max(r,g,b);
+    const mn=Math.min(r,g,b);
+
+    if(r>70 && r>g*.92 && g>b*.72 && mx-mn>18){
+      skinPoints.push({x,y});
+    }
+  }
+}
+
+/* 肌領域の重心 */
+let structureCx=palmCx;
+let structureCy=palmCy;
+
+if(skinPoints.length){
+  structureCx=
+    skinPoints.reduce((s,p)=>s+p.x,0)/skinPoints.length;
+
+  structureCy=
+    skinPoints.reduce((s,p)=>s+p.y,0)/skinPoints.length;
+}
+
+/* PCAで手全体の長軸を推定 */
+let xx=0, yy=0, xy=0;
+
+for(const p of skinPoints){
+  const dx=p.x-structureCx;
+  const dy=p.y-structureCy;
+
+  xx+=dx*dx;
+  yy+=dy*dy;
+  xy+=dx*dy;
+}
+
+let handAxisAngle=0;
+
+if(skinPoints.length>20){
+
+  xx/=skinPoints.length;
+  yy/=skinPoints.length;
+  xy/=skinPoints.length;
+
+  handAxisAngle=
+    0.5*Math.atan2(2*xy,xx-yy);
+
+  /* PCAは横軸を返す場合があるので長軸へ */
+  if(Math.abs(Math.cos(handAxisAngle)) >
+     Math.abs(Math.sin(handAxisAngle))){
+    handAxisAngle+=Math.PI/2;
+  }
+}
+
+/* 指方向は基本的に画像上側になるよう統一 */
+let axisX=Math.cos(handAxisAngle);
+let axisY=Math.sin(handAxisAngle);
+
+if(axisY>0){
+  axisX*=-1;
+  axisY*=-1;
+}
+
+/* 指側・手首側 */
+const axisLength=Math.max(palmW,palmH)*0.34;
+
+const fingerSide={
+  x:structureCx+axisX*axisLength,
+  y:structureCy+axisY*axisLength
+};
+
+const wristSide={
+  x:structureCx-axisX*axisLength,
+  y:structureCy-axisY*axisLength
+};
+
+/* 長軸に直交する左右方向 */
+let sideX=-axisY;
+let sideY= axisX;
+
+/*
+  resolvedHand を利用して
+  親指側 / 小指側を統一
+*/
+if(resolvedHand==='left'){
+  sideX*=-1;
+  sideY*=-1;
+}
+
+const sideLength=palmW*.30;
+
+const thumbSide={
+  x:structureCx+sideX*sideLength,
+  y:structureCy+sideY*sideLength
+};
+
+const pinkySide={
+  x:structureCx-sideX*sideLength,
+  y:structureCy-sideY*sideLength
+};
+
+/* 後工程で3線検出に使う手基準座標 */
+const palmStructure={
+  center:{
+    x:structureCx,
+    y:structureCy
+  },
+
+  finger:fingerSide,
+  wrist:wristSide,
+  thumb:thumbSide,
+  pinky:pinkySide,
+
+  axis:{
+    x:axisX,
+    y:axisY
+  },
+
+  sideAxis:{
+    x:sideX,
+    y:sideY
+  },
+
+  angle:
+    Math.atan2(axisY,axisX)*180/Math.PI,
+
+  width:palmW,
+  height:palmH
+};
  const frameCoverage=clamp((palmW*palmH)/(w*h),0,1);
  const scaleQuality=clamp(1-Math.abs(frameCoverage-.38)/.38,0,1);
 
