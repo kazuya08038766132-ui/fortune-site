@@ -1974,6 +1974,31 @@ main{
     max-height:540px !important;
   }
 }
+ /* ===== STAR TWINKLE SKY ONLY FIX ===== */
+
+/* 星レイヤーを空の部分だけに限定 */
+.starLayers{
+  bottom:auto !important;
+  height:55% !important;
+  overflow:hidden !important;
+}
+
+.starLayer{
+  height:100% !important;
+  bottom:auto !important;
+  background-position:center top !important;
+}
+
+/* スマホ */
+@media(max-width:760px){
+  .starLayers{
+    height:52% !important;
+  }
+
+  .starLayer{
+    background-position:center top !important;
+  }
+}
 </style>
 </head>
 <body>
