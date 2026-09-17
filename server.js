@@ -58,7 +58,10 @@ app.post("/api/stripe-webhook",
     }
   }
 );
-
+app.use((req, _res, next) => {
+  console.log("REQUEST:", req.method, req.url);
+  next();
+});
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static("."));
 app.get("/", (_req, res) => res.sendFile("index.html", { root: process.cwd() }));
