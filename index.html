@@ -2947,12 +2947,6 @@ for(let gy=0; gy<handMH; gy++){
   }
 }
 
-console.log(
-  "CONNECTED HAND MASK v1",
-  "skin:",skinPoints.length,
-  "hand:",connectedHandPoints.length,
-  "contour:",handContour.length
-);
  let lowerL=0,lowerR=0;
  for(let y=Math.floor(h*.48);y<Math.floor(h*.84);y+=4)for(let x=Math.floor(w*.05);x<Math.floor(w*.95);x+=4){
   const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
