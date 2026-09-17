@@ -1577,6 +1577,36 @@ main{
     opacity:.88;
   }
 }
+ /* ===== NEW MOON IMAGE ===== */
+
+.heroMoon{
+  position:absolute;
+  z-index:2 !important;
+
+  width:260px;
+  height:260px;
+
+  left:30px;
+  top:100px;
+
+  background:url("/hero-moon.png") center/contain no-repeat !important;
+  border:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+
+  filter:drop-shadow(0 0 20px rgba(255,220,140,.35));
+}
+
+/* スマホ */
+@media(max-width:760px){
+  .heroMoon{
+    width:150px;
+    height:150px;
+
+    left:-25px;
+    top:115px;
+  }
+}
 </style>
 </head>
 <body>
