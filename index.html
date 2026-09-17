@@ -3147,6 +3147,58 @@ const palmStructure={
  // Visual debug overlay for QA.
  const pv=document.getElementById('analysisPreview');pv.width=w;pv.height=h;pv.style.display='block';
  const pc=pv.getContext('2d');pc.drawImage(img,0,0,w,h);
+ /* ===== PALM STRUCTURE DEBUG v1 ===== */
+
+function drawStructurePoint(point,label){
+  pc.beginPath();
+  pc.arc(point.x,point.y,7,0,Math.PI*2);
+  pc.fill();
+
+  pc.font='bold 15px sans-serif';
+  pc.fillText(label,point.x+10,point.y-10);
+}
+
+pc.save();
+
+pc.lineWidth=4;
+pc.strokeStyle='#00ffff';
+pc.fillStyle='#00ffff';
+
+/* 指 ↔ 手首 */
+pc.beginPath();
+pc.moveTo(palmStructure.finger.x,palmStructure.finger.y);
+pc.lineTo(palmStructure.wrist.x,palmStructure.wrist.y);
+pc.stroke();
+
+/* 親指 ↔ 小指 */
+pc.strokeStyle='#ff00ff';
+pc.fillStyle='#ff00ff';
+
+pc.beginPath();
+pc.moveTo(palmStructure.thumb.x,palmStructure.thumb.y);
+pc.lineTo(palmStructure.pinky.x,palmStructure.pinky.y);
+pc.stroke();
+
+/* 基準点 */
+pc.fillStyle='#00ffff';
+drawStructurePoint(palmStructure.center,'掌中心');
+drawStructurePoint(palmStructure.finger,'指側');
+drawStructurePoint(palmStructure.wrist,'手首側');
+
+pc.fillStyle='#ff00ff';
+drawStructurePoint(palmStructure.thumb,'親指側');
+drawStructurePoint(palmStructure.pinky,'小指側');
+
+/* 推定角度 */
+pc.fillStyle='#ffffff';
+pc.font='bold 16px sans-serif';
+pc.fillText(
+  `手構造角度 ${palmStructure.angle.toFixed(1)}°`,
+  12,
+  26
+);
+
+pc.restore();
  pc.lineWidth=Math.max(2,w/250);pc.font=`${Math.max(12,w/35)}px sans-serif`;
  pc.save();
  pc.beginPath();pc.arc(palmCx,palmCy,7,0,Math.PI*2);pc.stroke();
