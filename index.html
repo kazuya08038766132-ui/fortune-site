@@ -1607,6 +1607,37 @@ main{
     top:115px;
   }
 }
+ /* ===== NEW HERO BACKGROUND ===== */
+
+/* PC背景 */
+.fortuneHeader{
+  background-image:url("/hero-bg-pc.png") !important;
+  background-size:cover !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
+
+/* 古い横一列の星を消す */
+.fortuneHeader::before{
+  content:none !important;
+  display:none !important;
+}
+
+/* 古いCSS装飾リングも消す */
+.fortuneHeader::after{
+  content:none !important;
+  display:none !important;
+}
+
+/* スマホ背景 */
+@media(max-width:760px){
+  .fortuneHeader{
+    background-image:url("/hero-bg-mobile.png") !important;
+    background-size:cover !important;
+    background-position:center top !important;
+    background-repeat:no-repeat !important;
+  }
+}
 </style>
 </head>
 <body>
