@@ -1638,6 +1638,78 @@ main{
     background-repeat:no-repeat !important;
   }
 }
+ /* ===== ANIMATED STAR LAYERS ===== */
+
+.starLayers{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.starLayer{
+  position:absolute;
+  inset:0;
+  background-position:center center;
+  background-size:cover;
+  background-repeat:no-repeat;
+
+  /* 黒背景画像でも夜空へ重ねられる */
+  mix-blend-mode:screen;
+}
+
+/* PC */
+.starLayerA{
+  background-image:url("/stars-pc-a.png");
+  animation:starsA 4.2s ease-in-out infinite;
+}
+
+.starLayerB{
+  background-image:url("/stars-pc-b.png");
+  animation:starsB 5.7s ease-in-out infinite;
+}
+
+.starLayerC{
+  background-image:url("/stars-pc-c.png");
+  animation:starsC 7.1s ease-in-out infinite;
+}
+
+@keyframes starsA{
+  0%,100%{opacity:.25;}
+  50%{opacity:.95;}
+}
+
+@keyframes starsB{
+  0%,100%{opacity:.85;}
+  50%{opacity:.20;}
+}
+
+@keyframes starsC{
+  0%,100%{opacity:.35;}
+  35%{opacity:.90;}
+  70%{opacity:.18;}
+}
+
+/* スマホ */
+@media(max-width:760px){
+
+  .starLayer{
+    background-position:center top;
+  }
+
+  .starLayerA{
+    background-image:url("/stars-mobile-a.png");
+  }
+
+  .starLayerB{
+    background-image:url("/stars-mobile-b.png");
+  }
+
+  .starLayerC{
+    background-image:url("/stars-mobile-c.png");
+  }
+}
 </style>
 </head>
 <body>
