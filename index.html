@@ -2271,6 +2271,34 @@ main{
     white-space:nowrap !important;
   }
 }
+ /* ===== MOBILE GENERATED TITLE BANNER ===== */
+@media(max-width:760px){
+
+  /* 旧タイトルと旧副題を消す */
+  .heroTitle,
+  .heroLead{
+    display:none !important;
+  }
+
+  /* 新タイトル画像 */
+  .fortuneHero::after{
+    content:"" !important;
+    display:block !important;
+    position:absolute !important;
+
+    top:18px !important;
+    left:10px !important;
+    right:10px !important;
+    height:145px !important;
+
+    background:
+      url("/hero-title-mobile.png")
+      center / contain no-repeat !important;
+
+    z-index:7 !important;
+    pointer-events:none !important;
+  }
+}
 </style>
 </head>
 <body>
