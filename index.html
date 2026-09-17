@@ -2222,6 +2222,55 @@ main{
     font-size:15px !important;
   }
 }
+ /* ===== MOBILE HERO TITLE LUXURY ===== */
+@media(max-width:760px){
+
+  .heroTitle{
+    top:55px !important;
+    left:20px !important;
+    right:20px !important;
+
+    padding:12px 0 15px !important;
+
+    /* 紫の箱を廃止 */
+    background:none !important;
+    border:none !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+
+    font-size:37px !important;
+    letter-spacing:.14em !important;
+    white-space:nowrap !important;
+
+    color:#fff7df !important;
+
+    text-shadow:
+      0 0 5px rgba(255,231,165,.75),
+      0 0 16px rgba(218,178,82,.30),
+      0 3px 8px rgba(0,0,0,.75) !important;
+
+    /* 上下に細い金装飾 */
+    border-top:1px solid rgba(222,190,104,.55) !important;
+    border-bottom:1px solid rgba(222,190,104,.75) !important;
+  }
+
+  /* チープに見える月・星記号を消す */
+  .heroTitle::first-letter{
+    font-size:0 !important;
+  }
+
+  .heroLead{
+    top:125px !important;
+    left:20px !important;
+    right:20px !important;
+    text-align:center !important;
+
+    font-size:14px !important;
+    letter-spacing:.18em !important;
+    color:#e7cc8c !important;
+    white-space:nowrap !important;
+  }
+}
 </style>
 </head>
 <body>
