@@ -2299,6 +2299,22 @@ main{
     pointer-events:none !important;
   }
 }
+ /* ===== MOBILE TITLE + MOON POSITION FIX ===== */
+@media(max-width:760px){
+
+  /* タイトル：大きくして上へ */
+  .fortuneHero::after{
+    top:0px !important;
+    left:-8px !important;
+    right:-8px !important;
+    height:165px !important;
+  }
+
+  /* 左の月：タイトルと被らないよう下へ */
+  .heroMoon{
+    top:125px !important;
+  }
+}
 </style>
 </head>
 <body>
