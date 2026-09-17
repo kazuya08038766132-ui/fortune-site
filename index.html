@@ -1812,6 +1812,154 @@ main{
     bottom:-10px;
   }
 }
+ /* =========================================
+   MOBILE HERO REBUILD v1
+   PCには影響させない
+========================================= */
+
+@media (max-width:760px){
+
+  .fortuneHeader{
+    min-height:0 !important;
+    height:auto !important;
+    overflow:hidden !important;
+  }
+
+  .fortuneHero{
+    position:relative !important;
+    width:100% !important;
+    max-width:none !important;
+
+    height:720px !important;
+    min-height:720px !important;
+
+    margin:0 !important;
+    padding:0 !important;
+
+    overflow:hidden !important;
+  }
+
+  /* 星空 */
+  .starLayers{
+    position:absolute !important;
+    inset:0 !important;
+    z-index:1 !important;
+  }
+
+  /* 月 */
+  .heroMoon{
+    position:absolute !important;
+    width:125px !important;
+    height:125px !important;
+    left:-20px !important;
+    top:55px !important;
+    z-index:2 !important;
+  }
+
+  /* 魔法陣 */
+  .magicCircle{
+    position:absolute !important;
+    width:270px !important;
+    height:270px !important;
+    right:-60px !important;
+    top:80px !important;
+    z-index:2 !important;
+    opacity:.85 !important;
+  }
+
+  /* 占い師 */
+  .readerWrap{
+    position:absolute !important;
+    width:205px !important;
+
+    right:-18px !important;
+    top:155px !important;
+    bottom:auto !important;
+
+    opacity:1 !important;
+    z-index:3 !important;
+
+    transform:none !important;
+    filter:none !important;
+  }
+
+  .fortuneReader{
+    display:block !important;
+    width:100% !important;
+    max-width:none !important;
+    height:auto !important;
+    opacity:1 !important;
+  }
+
+  /* テキストを画面中央へ */
+  .heroLead{
+    position:absolute !important;
+    left:20px !important;
+    right:20px !important;
+    top:330px !important;
+    margin:0 !important;
+    text-align:left !important;
+    z-index:5 !important;
+  }
+
+  .heroTitle{
+    position:absolute !important;
+    left:16px !important;
+    right:16px !important;
+    top:365px !important;
+    margin:0 !important;
+    text-align:center !important;
+    font-size:38px !important;
+    z-index:5 !important;
+  }
+
+  .heroCopy{
+    position:absolute !important;
+    left:22px !important;
+    right:22px !important;
+    top:430px !important;
+    margin:0 !important;
+    z-index:5 !important;
+  }
+
+  .heroEnglish{
+    position:absolute !important;
+    left:22px !important;
+    right:22px !important;
+    top:485px !important;
+    margin:0 !important;
+    z-index:5 !important;
+  }
+
+  .heroCta{
+    position:absolute !important;
+    left:28px !important;
+    right:28px !important;
+    top:515px !important;
+    width:auto !important;
+    margin:0 !important;
+    z-index:6 !important;
+  }
+
+  .heroFortunes{
+    position:absolute !important;
+    left:12px !important;
+    right:12px !important;
+    top:585px !important;
+
+    margin:0 !important;
+    z-index:5 !important;
+
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:6px !important;
+  }
+
+  /* 古い星装飾は完全停止 */
+  .twinkleField,
+  .heroStars{
+    display:none !important;
+  }
+}
 </style>
 </head>
 <body>
