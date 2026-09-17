@@ -2832,7 +2832,131 @@ if(skinPoints.length){
   structureCy=
     skinPoints.reduce((s,p)=>s+p.y,0)/skinPoints.length;
 }
+/* ===== HAND STRUCTURE v4 : FINGERTIP CANDIDATES =====
+   まだ親指/小指とは決めない。
+   掌中心から見た輪郭の突出ピークを指先候補として抽出する。
+==================================================== */
 
+const fingerCandidates=[];
+
+if(skinPoints.length>30){
+
+  /* 掌中心から360°を72方向（5°刻み）で調べる */
+  const bins=72;
+  const radial=new Array(bins).fill(null).map(()=>({
+    maxR:0,
+    x:structureCx,
+    y:structureCy
+  }));
+
+  for(const p of skinPoints){
+
+    const dx=p.x-structureCx;
+    const dy=p.y-structureCy;
+    const rr=Math.hypot(dx,dy);
+
+    if(rr<1) continue;
+
+    let ang=Math.atan2(dy,dx);
+    if(ang<0) ang+=Math.PI*2;
+
+    const bi=Math.min(
+      bins-1,
+      Math.floor(ang/(Math.PI*2)*bins)
+    );
+
+    if(rr>radial[bi].maxR){
+      radial[bi]={
+        maxR:rr,
+        x:p.x,
+        y:p.y
+      };
+    }
+  }
+
+  /* 近隣方向を平均してノイズを抑える */
+  const smooth=radial.map((_,i)=>{
+    let sum=0,n=0;
+
+    for(let k=-2;k<=2;k++){
+      const j=(i+k+bins)%bins;
+
+      if(radial[j].maxR>0){
+        sum+=radial[j].maxR;
+        n++;
+      }
+    }
+
+    return n ? sum/n : 0;
+  });
+
+  const validR=smooth.filter(v=>v>0);
+  const meanR=validR.length
+    ?validR.reduce((a,b)=>a+b,0)/validR.length
+    :0;
+
+  /*
+    周囲より突出していて、
+    掌平均半径より十分長いものだけピーク候補にする。
+  */
+  const rawPeaks=[];
+
+  for(let i=0;i<bins;i++){
+
+    const prev=smooth[(i-1+bins)%bins];
+    const cur=smooth[i];
+    const next=smooth[(i+1)%bins];
+
+    if(
+      cur>prev &&
+      cur>=next &&
+      cur>meanR*1.10
+    ){
+      rawPeaks.push({
+        bin:i,
+        strength:cur/Math.max(1,meanR),
+        x:radial[i].x,
+        y:radial[i].y
+      });
+    }
+  }
+
+  /*
+    同じ指から複数ピークが出るのを防ぐ。
+    角度が近い候補は強い方だけ残す。
+  */
+  rawPeaks.sort((a,b)=>b.strength-a.strength);
+
+  for(const p of rawPeaks){
+
+    const tooClose=fingerCandidates.some(q=>{
+      let diff=Math.abs(p.bin-q.bin);
+      diff=Math.min(diff,bins-diff);
+
+      /* 15°以内は同じ指候補とみなす */
+      return diff<=3;
+    });
+
+    if(!tooClose){
+      fingerCandidates.push(p);
+    }
+
+    /* 異常な大量検出を防止 */
+    if(fingerCandidates.length>=7) break;
+  }
+
+  /* 画像上の角度順に並べ直す */
+  fingerCandidates.sort((a,b)=>a.bin-b.bin);
+}
+
+/* 指候補の最低限の品質情報 */
+const fingerStructureQuality={
+  candidateCount:fingerCandidates.length,
+
+  usable:
+    fingerCandidates.length>=4 &&
+    fingerCandidates.length<=6
+};
 /* PCAで手全体の長軸を推定 */
 let xx=0, yy=0, xy=0;
 
