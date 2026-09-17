@@ -2349,6 +2349,84 @@ main{
 #result .qualityWarning{
   color:#6b5420 !important;
 }
+ /* ===== FORTUNE RESULT READABILITY v2 ===== */
+
+/* 鑑定結果の基本文字 */
+#result{
+  color:#241b38 !important;
+  line-height:1.85 !important;
+}
+
+#result p,
+#result li{
+  color:#302640 !important;
+}
+
+/* 黄色が薄すぎる問題を修正 */
+#result h2,
+#result h3,
+#result strong,
+#result b{
+  color:#8b5a08 !important;
+  text-shadow:none !important;
+}
+
+/* 詳細鑑定エリア */
+.paidProduct,
+#paidPreview,
+.paidResultPage .card{
+  background:#fffdf8 !important;
+  color:#2c2340 !important;
+}
+
+/* 各鑑定項目をカードっぽく分離 */
+.paidGrid > div,
+#paidResultSections > div{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(248,244,255,.98),
+      rgba(255,252,243,.98)
+    ) !important;
+
+  border:1px solid rgba(126,91,35,.28) !important;
+  border-left:4px solid #a87618 !important;
+  border-radius:14px !important;
+
+  padding:18px !important;
+  margin:14px 0 !important;
+
+  box-shadow:0 4px 14px rgba(30,18,55,.08) !important;
+}
+
+/* セクションタイトル */
+.paidGrid > div > b,
+#paidResultSections h3{
+  display:block !important;
+
+  color:#24144c !important;
+  font-size:20px !important;
+  font-weight:700 !important;
+
+  border-bottom:1px solid rgba(168,118,24,.30) !important;
+  padding-bottom:8px !important;
+  margin-bottom:10px !important;
+}
+
+/* 本文 */
+.paidGrid p,
+#paidResultSections p{
+  color:#332a43 !important;
+  font-size:16px !important;
+  line-height:1.9 !important;
+}
+
+/* 補助文字 */
+.notice,
+.small,
+#paidResultMeta{
+  color:#655c70 !important;
+}
 </style>
 </head>
 <body>
