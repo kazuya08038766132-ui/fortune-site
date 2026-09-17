@@ -60,7 +60,7 @@ app.post("/api/stripe-webhook",
 );
 
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static("public"));
+app.use(express.static("."));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
