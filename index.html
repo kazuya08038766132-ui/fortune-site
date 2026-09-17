@@ -3604,6 +3604,24 @@ const palmStructure={
  // Visual debug overlay for QA.
  const pv=document.getElementById('analysisPreview');pv.width=w;pv.height=h;pv.style.display='block';
  const pc=pv.getContext('2d');pc.drawImage(img,0,0,w,h);
+ /* ===== HAND CONTOUR DEBUG v1 ===== */
+pc.save();
+
+pc.fillStyle='#ffff00';
+
+for(const p of handContour){
+  pc.fillRect(p.x-2,p.y-2,4,4);
+}
+
+pc.fillStyle='#ffff00';
+pc.font='bold 16px sans-serif';
+pc.fillText(
+  `手輪郭 ${handContour.length}点`,
+  12,
+  74
+);
+
+pc.restore();
  /* ===== PALM STRUCTURE DEBUG v1 ===== */
 /* ===== FINGERTIP DEBUG v4 ===== */
 
