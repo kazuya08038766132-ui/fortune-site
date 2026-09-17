@@ -2885,18 +2885,79 @@ const wristSide={
   y:structureCy-axisY*axisLength
 };
 
-/* 長軸に直交する左右方向 */
+/* ===== THUMB SIDE DETECTION v2 =====
+   画面左右ではなく、手軸に対する輪郭の張り出しから親指側を推定
+================================================ */
+
 let sideX=-axisY;
 let sideY= axisX;
 
+let plusExtent=0;
+let minusExtent=0;
+let plusScore=0;
+let minusScore=0;
+
 /*
-  resolvedHand を利用して
-  親指側 / 小指側を統一
+  掌中心付近だけを見る。
+  指先の広がりを親指と誤認しないため、
+  手軸方向の中央～手首寄りを優先する。
 */
-if(resolvedHand==='left'){
+for(const p of skinPoints){
+
+  const dx=p.x-structureCx;
+  const dy=p.y-structureCy;
+
+  const along=dx*axisX+dy*axisY;
+  const side =dx*sideX+dy*sideY;
+
+  /*
+    指先側を除外。
+    掌中央から手首寄りの輪郭を使う。
+  */
+  if(
+    along < axisLength*.45 &&
+    along > -axisLength*.85
+  ){
+
+    if(side>0){
+      plusExtent=Math.max(plusExtent,side);
+      plusScore+=side;
+    }else{
+      minusExtent=Math.max(minusExtent,-side);
+      minusScore+=-side;
+    }
+  }
+}
+
+/*
+  親指球は小指側より張り出しやすい。
+  最大張り出し＋面積的な張り出しの両方を見る。
+*/
+const plusThumbScore=
+  plusExtent*.70+
+  (plusScore/Math.max(1,skinPoints.length))*.30;
+
+const minusThumbScore=
+  minusExtent*.70+
+  (minusScore/Math.max(1,skinPoints.length))*.30;
+
+/* マイナス側の張り出しが大きければ軸を反転 */
+if(minusThumbScore>plusThumbScore){
   sideX*=-1;
   sideY*=-1;
 }
+
+const sideLength=palmW*.30;
+
+const thumbSide={
+  x:structureCx+sideX*sideLength,
+  y:structureCy+sideY*sideLength
+};
+
+const pinkySide={
+  x:structureCx-sideX*sideLength,
+  y:structureCy-sideY*sideLength
+};
 
 const sideLength=palmW*.30;
 
