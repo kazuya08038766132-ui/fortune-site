@@ -2769,6 +2769,190 @@ async function palmFeatures(file,handSide='auto',calibrationMode='auto'){
   }
  }
  const palmCx=skinN?skinX/skinN:w*.5, palmCy=skinN?skinY/skinN:h*.60;
+ /* ===== CONNECTED HAND MASK v1 =====
+   palmCx / palmCy に最も近い肌領域だけを「手」として残す
+================================================ */
+
+const HAND_MASK_STEP = 3;
+const handMW = Math.ceil(w / HAND_MASK_STEP);
+const handMH = Math.ceil(h / HAND_MASK_STEP);
+
+const coarseSkin = new Uint8Array(handMW * handMH);
+const connectedMask = new Uint8Array(handMW * handMH);
+
+/* 1. 粗い肌マスク */
+for(let gy=0; gy<handMH; gy++){
+  for(let gx=0; gx<handMW; gx++){
+
+    const x=Math.min(w-1,gx*HAND_MASK_STEP);
+    const y=Math.min(h-1,gy*HAND_MASK_STEP);
+
+    const i=(y*w+x)*4;
+
+    const r=d[i];
+    const g=d[i+1];
+    const b=d[i+2];
+
+    const mx=Math.max(r,g,b);
+    const mn=Math.min(r,g,b);
+
+    const isSkin=
+      r>70 &&
+      r>g*.92 &&
+      g>b*.72 &&
+      mx-mn>18;
+
+    if(isSkin){
+      coarseSkin[gy*handMW+gx]=1;
+    }
+  }
+}
+
+/* 2. 掌中心に近い肌点を開始点にする */
+let seedGX=Math.max(
+  0,
+  Math.min(handMW-1,Math.round(palmCx/HAND_MASK_STEP))
+);
+
+let seedGY=Math.max(
+  0,
+  Math.min(handMH-1,Math.round(palmCy/HAND_MASK_STEP))
+);
+
+if(!coarseSkin[seedGY*handMW+seedGX]){
+
+  let found=null;
+
+  for(let radius=1;
+      radius<Math.max(handMW,handMH) && !found;
+      radius++){
+
+    for(let yy=seedGY-radius;
+        yy<=seedGY+radius && !found;
+        yy++){
+
+      for(let xx=seedGX-radius;
+          xx<=seedGX+radius;
+          xx++){
+
+        if(
+          xx<0 || yy<0 ||
+          xx>=handMW || yy>=handMH
+        ) continue;
+
+        if(coarseSkin[yy*handMW+xx]){
+          found={x:xx,y:yy};
+          break;
+        }
+      }
+    }
+  }
+
+  if(found){
+    seedGX=found.x;
+    seedGY=found.y;
+  }
+}
+
+/* 3. Flood Fill
+      開始点につながっている肌だけ残す */
+const handQueue=[];
+
+if(coarseSkin[seedGY*handMW+seedGX]){
+
+  connectedMask[seedGY*handMW+seedGX]=1;
+  handQueue.push([seedGX,seedGY]);
+
+  const dirs=[
+    [-1,0],[1,0],[0,-1],[0,1],
+    [-1,-1],[1,-1],[-1,1],[1,1]
+  ];
+
+  for(let qi=0; qi<handQueue.length; qi++){
+
+    const [cx,cy]=handQueue[qi];
+
+    for(const [dx,dy] of dirs){
+
+      const nx=cx+dx;
+      const ny=cy+dy;
+
+      if(
+        nx<0 || ny<0 ||
+        nx>=handMW || ny>=handMH
+      ) continue;
+
+      const ni=ny*handMW+nx;
+
+      if(
+        coarseSkin[ni] &&
+        !connectedMask[ni]
+      ){
+        connectedMask[ni]=1;
+        handQueue.push([nx,ny]);
+      }
+    }
+  }
+}
+
+/* 4. 手領域の点 */
+const connectedHandPoints=[];
+
+/* 5. さらに輪郭だけ取得 */
+const handContour=[];
+
+for(let gy=0; gy<handMH; gy++){
+
+  for(let gx=0; gx<handMW; gx++){
+
+    const mi=gy*handMW+gx;
+
+    if(!connectedMask[mi]) continue;
+
+    const px=gx*HAND_MASK_STEP;
+    const py=gy*HAND_MASK_STEP;
+
+    connectedHandPoints.push({
+      x:px,
+      y:py
+    });
+
+    let boundary=false;
+
+    for(let yy=-1; yy<=1 && !boundary; yy++){
+      for(let xx=-1; xx<=1; xx++){
+
+        if(xx===0 && yy===0) continue;
+
+        const nx=gx+xx;
+        const ny=gy+yy;
+
+        if(
+          nx<0 || ny<0 ||
+          nx>=handMW || ny>=handMH ||
+          !connectedMask[ny*handMW+nx]
+        ){
+          boundary=true;
+          break;
+        }
+      }
+    }
+
+    if(boundary){
+      handContour.push({
+        x:px,
+        y:py
+      });
+    }
+  }
+}
+
+console.log(
+  "CONNECTED HAND MASK v1",
+  "skin:",skinPoints.length,
+  "hand:",connectedHandPoints.length,
+  "contour:",handContour.length
+);
  let lowerL=0,lowerR=0;
  for(let y=Math.floor(h*.48);y<Math.floor(h*.84);y+=4)for(let x=Math.floor(w*.05);x<Math.floor(w*.95);x+=4){
   const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
