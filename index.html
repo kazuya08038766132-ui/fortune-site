@@ -1513,6 +1513,69 @@ main{
     backdrop-filter:blur(4px);
   }
 }
+ /* ===== NEW 3-LAYER MAGIC CIRCLE ===== */
+
+.magicCircle{
+  position:absolute;
+  width:500px;
+  height:500px;
+  right:-30px;
+  top:70px;
+  z-index:2;
+  pointer-events:none;
+  opacity:.92;
+}
+
+.magicLayer{
+  position:absolute;
+  inset:0;
+  margin:auto;
+  display:block;
+  object-fit:contain;
+  transform-origin:50% 50%;
+}
+
+/* 金色の外輪 */
+.magicOuter{
+  width:100%;
+  height:100%;
+  animation:magicClockwise 100s linear infinite;
+}
+
+/* 12星座 */
+.magicZodiac{
+  width:87%;
+  height:87%;
+  animation:magicClockwise 100s linear infinite;
+}
+
+/* 青い内輪 */
+.magicInner{
+  width:63%;
+  height:63%;
+  animation:magicCounter 70s linear infinite;
+}
+
+@keyframes magicClockwise{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+
+@keyframes magicCounter{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(-360deg);}
+}
+
+/* スマホ */
+@media(max-width:760px){
+  .magicCircle{
+    width:390px;
+    height:390px;
+    right:-105px;
+    top:120px;
+    opacity:.88;
+  }
+}
 </style>
 </head>
 <body>
