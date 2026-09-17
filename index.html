@@ -2958,8 +2958,11 @@ async function palmFeatures(file,handSide='auto',calibrationMode='auto'){
    :(portrait?bandStats('感情線候補',.13+sx,.83+sx,.37+sy,.54+sy):bandStats('感情線候補',.18+sx,.83+sx,.28+sy,.48+sy));
  const head=sampleCal?bandStats('知能線候補',.15+sx,.84+sx,.505+sy,.635+sy)
    :(portrait?bandStats('知能線候補',.12+sx,.86+sx,.48+sy,.67+sy):bandStats('知能線候補',.16+sx,.86+sx,.42+sy,.64+sy));
- const life=sampleCal?bandStats('生命線候補',.39+sx,.88+sx,.515+sy,.835+sy)
-   :(portrait?bandStats('生命線候補',.34+sx,.91+sx,.48+sy,.87+sy):bandStats('生命線候補',.28+sx,.82+sx,.43+sy,.88+sy));
+ const life=sampleCal
+  ?bandStats('生命線候補',.43+sx,.79+sx,.50+sy,.82+sy)
+  :(portrait
+    ?bandStats('生命線候補',.40+sx,.82+sx,.49+sy,.84+sy)
+    :bandStats('生命線候補',.36+sx,.79+sx,.44+sy,.84+sy));
  const tiltDeg=clamp(head.direction,-18,18), tiltQuality=clamp(head.coverage*(1-Math.abs(tiltDeg)/45),0,1);
  analysisContext.tilt=+tiltDeg.toFixed(2);
  const tiltRad=-tiltDeg*Math.PI/180;
