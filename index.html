@@ -2863,17 +2863,122 @@ if(skinPoints.length>20){
   }
 }
 
-/* 指方向は基本的に画像上側になるよう統一 */
-let axisX=Math.cos(handAxisAngle);
-let axisY=Math.sin(handAxisAngle);
+/* ===== HAND AXIS CLASSIFIER v2 =====
+   PCAの2軸から「指↔手首」軸を画像形状で選ぶ
+=================================== */
 
-if(axisY>0){
+let pcaX=Math.cos(handAxisAngle);
+let pcaY=Math.sin(handAxisAngle);
+
+const axisCandidates=[
+  {x:pcaX,y:pcaY},
+  {x:-pcaY,y:pcaX}
+];
+
+/* 軸の両端にある肌点の広がりを調べる。
+   指側は複数の指があるため横方向の分散が大きくなりやすい。 */
+function scoreHandAxis(ax,ay){
+
+  const sx=-ay, sy=ax;
+  const projected=[];
+
+  for(const p of skinPoints){
+    const dx=p.x-structureCx;
+    const dy=p.y-structureCy;
+
+    projected.push({
+      along:dx*ax+dy*ay,
+      side:dx*sx+dy*sy
+    });
+  }
+
+  if(projected.length<20)
+    return {score:-Infinity,flip:false};
+
+  let minA=Infinity,maxA=-Infinity;
+
+  for(const p of projected){
+    minA=Math.min(minA,p.along);
+    maxA=Math.max(maxA,p.along);
+  }
+
+  const span=Math.max(1,maxA-minA);
+  const endBand=span*.22;
+
+  let plusSides=[];
+  let minusSides=[];
+
+  for(const p of projected){
+    if(p.along>maxA-endBand)
+      plusSides.push(p.side);
+
+    if(p.along<minA+endBand)
+      minusSides.push(p.side);
+  }
+
+  function spread(arr){
+    if(arr.length<4)return 0;
+
+    let mn=Infinity,mx=-Infinity;
+
+    for(const v of arr){
+      mn=Math.min(mn,v);
+      mx=Math.max(mx,v);
+    }
+
+    return mx-mn;
+  }
+
+  const plusSpread=spread(plusSides);
+  const minusSpread=spread(minusSides);
+
+  /*
+    指側は端部の横方向の広がりが大きい。
+    手首側は比較的細い。
+  */
+  const fingerPlus=plusSpread>=minusSpread;
+
+  const ratio=
+    Math.max(plusSpread,minusSpread) /
+    Math.max(1,Math.min(plusSpread,minusSpread));
+
+  return {
+    score:ratio,
+    flip:!fingerPlus
+  };
+}
+
+const a0=scoreHandAxis(
+  axisCandidates[0].x,
+  axisCandidates[0].y
+);
+
+const a1=scoreHandAxis(
+  axisCandidates[1].x,
+  axisCandidates[1].y
+);
+
+let chosen=
+  a1.score>a0.score
+    ?axisCandidates[1]
+    :axisCandidates[0];
+
+let chosenInfo=
+  a1.score>a0.score
+    ?a1
+    :a0;
+
+let axisX=chosen.x;
+let axisY=chosen.y;
+
+/* 広い端を必ず指側にする */
+if(chosenInfo.flip){
   axisX*=-1;
   axisY*=-1;
 }
 
-/* 指側・手首側 */
-const axisLength=Math.max(palmW,palmH)*0.34;
+const axisLength=
+  Math.max(palmW,palmH)*.34;
 
 const fingerSide={
   x:structureCx+axisX*axisLength,
