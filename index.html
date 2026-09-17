@@ -3427,7 +3427,40 @@ const palmStructure={
  const pv=document.getElementById('analysisPreview');pv.width=w;pv.height=h;pv.style.display='block';
  const pc=pv.getContext('2d');pc.drawImage(img,0,0,w,h);
  /* ===== PALM STRUCTURE DEBUG v1 ===== */
+/* ===== FINGERTIP DEBUG v4 ===== */
 
+pc.save();
+
+pc.lineWidth=3;
+pc.strokeStyle='#00ff66';
+pc.fillStyle='#00ff66';
+pc.font='bold 14px sans-serif';
+
+fingerCandidates.forEach((p,i)=>{
+
+  pc.beginPath();
+  pc.arc(p.x,p.y,11,0,Math.PI*2);
+  pc.stroke();
+
+  pc.fillText(
+    `指候補${i+1}`,
+    p.x+14,
+    p.y
+  );
+
+});
+
+/* 候補数 */
+pc.fillStyle='#00ff66';
+pc.font='bold 16px sans-serif';
+
+pc.fillText(
+  `指候補 ${fingerCandidates.length}個`,
+  12,
+  50
+);
+
+pc.restore();
 function drawStructurePoint(point,label){
   pc.beginPath();
   pc.arc(point.x,point.y,7,0,Math.PI*2);
