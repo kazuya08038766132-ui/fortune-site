@@ -431,15 +431,448 @@ button{
     border-width:1px;
   }
 }
+ /* ===== Celestial Hero Header ===== */
+
+.fortuneHeader{
+  position:relative;
+  overflow:hidden;
+  color:#fff;
+  min-height:720px;
+  background:
+    radial-gradient(circle at 18% 35%,rgba(124,83,214,.48),transparent 23%),
+    radial-gradient(circle at 82% 38%,rgba(125,57,181,.38),transparent 27%),
+    radial-gradient(circle at 50% 60%,rgba(52,66,156,.38),transparent 32%),
+    linear-gradient(145deg,#020718 0%,#09122f 32%,#1b0c43 70%,#08091e 100%);
+  border-bottom:2px solid #d9b55a;
+  box-shadow:0 15px 45px rgba(15,5,48,.45);
+}
+
+/* 星空 */
+.fortuneHeader::before{
+  content:"✦  ·  ✧    ·  ★   ·   ✦      ·  ✧   ·  ☾    ✦   ·   ☆     ·   ✧   ★";
+  position:absolute;
+  inset:90px 0 auto 0;
+  color:#ffe9a4;
+  text-align:center;
+  font-size:18px;
+  letter-spacing:18px;
+  opacity:.75;
+  text-shadow:
+    0 0 8px #fff,
+    0 0 18px #b58cff;
+  pointer-events:none;
+}
+
+.fortuneHeader::after{
+  content:"";
+  position:absolute;
+  width:430px;
+  height:430px;
+  right:-130px;
+  top:120px;
+  border:1px solid rgba(224,188,94,.35);
+  border-radius:50%;
+  box-shadow:
+    0 0 0 30px rgba(221,181,84,.025),
+    0 0 0 70px rgba(221,181,84,.025),
+    0 0 60px rgba(174,109,255,.18);
+  pointer-events:none;
+}
+
+/* ナビ */
+.fortuneNav{
+  position:relative;
+  z-index:5;
+  max-width:1180px;
+  margin:auto;
+  padding:18px 25px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(222,185,91,.55);
+}
+
+.fortuneLogo{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  color:#f9e6a3;
+}
+
+.fortuneMoon{
+  font-size:40px;
+  line-height:1;
+  filter:drop-shadow(0 0 10px rgba(255,220,117,.55));
+}
+
+.fortuneLogo strong{
+  display:block;
+  font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;
+  font-size:25px;
+  letter-spacing:.13em;
+  color:#fff0bb;
+}
+
+.fortuneLogo small{
+  display:block;
+  margin-top:3px;
+  font-family:Georgia,serif;
+  letter-spacing:.35em;
+  color:#e0c371;
+  font-size:9px;
+}
+
+.fortuneNav nav{
+  display:flex;
+  gap:27px;
+}
+
+.fortuneNav nav a{
+  color:#fff7dd;
+  text-decoration:none;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  font-size:14px;
+  letter-spacing:.08em;
+  padding:9px 2px;
+  border-bottom:1px solid transparent;
+}
+
+.fortuneNav nav a:hover{
+  color:#ffe08b;
+  border-bottom-color:#d9b55a;
+}
+
+/* ヒーロー */
+.fortuneHero{
+  position:relative;
+  z-index:2;
+  max-width:1000px;
+  margin:auto;
+  text-align:center;
+  padding:70px 20px 60px;
+}
+
+.heroStars{
+  color:#f8d87c;
+  letter-spacing:13px;
+  font-size:15px;
+  text-shadow:0 0 12px #cf9dff;
+}
+
+.heroLead{
+  margin:30px 0 12px;
+  color:#f5df9d;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  letter-spacing:.24em;
+  font-size:18px;
+}
+
+/* 元CSSのh1設定を上書き */
+.fortuneHero .heroTitle{
+  margin:12px 0 8px;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",Georgia,serif;
+  font-size:clamp(58px,9vw,100px);
+  font-weight:600;
+  letter-spacing:.12em;
+  line-height:1.15;
+  color:#fff0b6 !important;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 14px #ffd36b,
+    0 0 34px rgba(186,113,255,.75),
+    0 6px 8px rgba(0,0,0,.6);
+}
+
+.fortuneHero .heroTitle::before{
+  content:"";
+}
+
+.fortuneHero .heroTitle::after{
+  content:"";
+}
+
+.heroCopy{
+  margin:22px 0 13px;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  color:#fff;
+  font-size:21px;
+  line-height:1.8;
+  letter-spacing:.15em;
+  text-shadow:0 2px 8px #000;
+}
+
+.heroEnglish{
+  color:#dfc47b;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:12px;
+  letter-spacing:.32em;
+  margin:16px 0 28px;
+}
+
+/* メインボタン */
+.heroCta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  max-width:520px;
+  margin:0 auto;
+  box-sizing:border-box;
+  padding:17px 27px;
+  border:2px solid #dcb75c;
+  border-radius:999px;
+  color:#fff;
+  text-decoration:none;
+  font-size:18px;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  letter-spacing:.08em;
+  background:
+    linear-gradient(100deg,#1d164f,#52218f 50%,#18194c);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,226,140,.15),
+    0 0 20px rgba(214,174,85,.28),
+    0 10px 30px rgba(0,0,0,.4);
+}
+
+.heroCta span:first-child{
+  color:#ffe08c;
+  text-shadow:0 0 12px #fff;
+}
+
+/* 4運勢 */
+.heroFortunes{
+  max-width:720px;
+  margin:42px auto 0;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.heroFortunes > div{
+  aspect-ratio:1;
+  border:1px solid #d7b159;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(121,71,177,.28),rgba(8,11,39,.86) 65%);
+  box-shadow:
+    inset 0 0 18px rgba(219,176,84,.08),
+    0 0 15px rgba(124,77,193,.25);
+}
+
+.heroFortunes > div > span{
+  color:#f4d47b;
+  font-size:28px;
+  line-height:1;
+  margin-bottom:9px;
+}
+
+.heroFortunes strong{
+  color:#fff4cf;
+  font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  font-size:16px;
+  letter-spacing:.08em;
+}
+
+.heroFortunes small{
+  color:#cfc5e5;
+  margin-top:5px;
+  font-size:10px;
+}
+
+/* 下の本体も紺紫系に統一 */
+body{
+  background:
+    radial-gradient(circle at 50% 30%,rgba(79,42,132,.2),transparent 35%),
+    linear-gradient(180deg,#07091e,#130b32 45%,#080a20 100%) !important;
+}
+
+main{
+  position:relative;
+}
+
+/* カードをモックアップ寄りに */
+.card{
+  background:
+    linear-gradient(145deg,rgba(15,17,51,.97),rgba(28,15,61,.97)) !important;
+  border:1px solid #cda953 !important;
+  color:#f9f2df !important;
+  box-shadow:
+    0 15px 45px rgba(0,0,0,.38),
+    inset 0 0 25px rgba(121,73,174,.1) !important;
+}
+
+.card p,
+.card span,
+.card div,
+.card small{
+  color:#e8e0ef;
+}
+
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+.card label,
+.card strong,
+.card b{
+  color:#ffe7a0 !important;
+}
+
+.card input,
+.card select,
+.card textarea{
+  background:#fffaf0 !important;
+  color:#281b3c !important;
+}
+
+/* スマホ */
+@media(max-width:760px){
+  .fortuneHeader{
+    min-height:auto;
+  }
+
+  .fortuneNav{
+    padding:14px 15px;
+  }
+
+  .fortuneLogo strong{
+    font-size:20px;
+  }
+
+  .fortuneMoon{
+    font-size:32px;
+  }
+
+  .fortuneNav nav{
+    display:none;
+  }
+
+  .fortuneHero{
+    padding:50px 15px 45px;
+  }
+
+  .heroLead{
+    font-size:14px;
+    letter-spacing:.16em;
+  }
+
+  .fortuneHero .heroTitle{
+    font-size:55px;
+  }
+
+  .heroCopy{
+    font-size:17px;
+  }
+
+  .heroEnglish{
+    font-size:9px;
+    letter-spacing:.18em;
+  }
+
+  .heroCta{
+    font-size:15px;
+    padding:15px 19px;
+  }
+
+  .heroFortunes{
+    grid-template-columns:repeat(2,1fr);
+    max-width:360px;
+    gap:15px;
+    margin-top:32px;
+  }
+
+  .heroFortunes > div{
+    aspect-ratio:1;
+  }
+
+  .fortuneHeader::after{
+    width:260px;
+    height:260px;
+    right:-150px;
+    top:120px;
+  }
+}
 </style>
 </head>
 <body>
+
+<header class="fortuneHeader">
+  <div class="fortuneNav">
+    <div class="fortuneLogo">
+      <span class="fortuneMoon">☾</span>
+      <div>
+        <strong>総合占い</strong>
+        <small>FORTUNE</small>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#freeFortune">無料占い</a>
+      <a href="#paidCta">詳細鑑定</a>
+      <a href="#membership">月額会員</a>
+      <a href="#reviews">みんなの口コミ</a>
+    </nav>
+  </div>
+
+  <div class="fortuneHero">
+    <div class="heroStars">✦　✧　☾　✦　☆　✧　☽　✦</div>
+
+    <p class="heroLead">あなたの毎日に、星の導きを</p>
+
+    <h1 class="heroTitle">総合占い</h1>
+
+    <p class="heroCopy">
+      生年月日と手のひらから、<br>
+      あなたの運勢を読み解く
+    </p>
+
+    <div class="heroEnglish">
+      FORTUNE FOR A BRIGHTER TOMORROW
+    </div>
+
+    <a class="heroCta" href="#freeFortune">
+      <span>✦</span>
+      無料であなたの運勢を占う
+      <span>›</span>
+    </a>
+
+    <div class="heroFortunes">
+      <div>
+        <span>♡</span>
+        <strong>恋愛運</strong>
+        <small>あの人との未来</small>
+      </div>
+
+      <div>
+        <span>♙</span>
+        <strong>仕事運</strong>
+        <small>これからの流れ</small>
+      </div>
+
+      <div>
+        <span>◎</span>
+        <strong>金運</strong>
+        <small>豊かさのヒント</small>
+      </div>
+
+      <div>
+        <span>♧</span>
+        <strong>健康運</strong>
+        <small>心と体のバランス</small>
+      </div>
+    </div>
+  </div>
+</header>
+
 <div class="modebar">
  <button type="button" id="userModeBtn">利用者画面</button>
  <button type="button" id="devModeBtn">開発者画面</button>
 </div><div class="userOnly steps" id="steps"><span class="active" data-step="1">1 入力</span><span data-step="2">2 解析</span><span data-step="3">3 無料鑑定</span><span data-step="4">4 詳細鑑定</span></div>
 <main>
-<div class="card">
+<div class="card" id="freeFortune">
 <h1>総合占い</h1>
 <p>生年月日と手のひらの情報をもとに、あなたの傾向を総合的に読み解きます。</p>
 <label>生年月日</label><input id="birth" type="date">
