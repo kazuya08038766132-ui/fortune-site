@@ -2600,8 +2600,8 @@ body.devMode details:has(summary){display:block}
     <h1 class="heroTitle">総合占い</h1>
 
     <p class="heroCopy">
-      生年月日と手のひらから、<br>
-      あなたの運勢を読み解く
+      姓名・生年月日・手のひらから、<br>
+      あなたの運命を3つの視点で読み解く
     </p>
 
     <div class="heroEnglish">
@@ -2650,9 +2650,11 @@ body.devMode details:has(summary){display:block}
 <main>
 <div class="card" id="freeFortune">
 <h1>総合占い</h1>
-<p>生年月日と手のひらの情報をもとに、あなたの傾向を総合的に読み解きます。</p>
+<p>姓名判断・生年月日・手相の3つを組み合わせ、共通する傾向と違いを総合的に読み解きます。</p>
+<div class="nameGrid"><div><label>姓</label><input id="familyName" type="text" autocomplete="family-name" placeholder="例：山田"></div><div><label>名</label><input id="givenName" type="text" autocomplete="given-name" placeholder="例：太郎"></div></div>
 <label>生年月日</label><input id="birth" type="date">
-<label>手のひら写真</label>
+<label>利き手</label><select id="dominantHand"><option value="right">右手</option><option value="left">左手</option></select>
+<label>利き手の手のひら写真</label>
 
 <input id="palm" type="file" accept="image/*">
 <div class="devOnly"><label for="handSide">手の向き（開発確認用）</label>
@@ -2665,7 +2667,7 @@ body.devMode details:has(summary){display:block}
 <select id="theme"><option>総合</option><option>恋愛</option><option>仕事</option><option>金運</option><option>相性</option></select>
 <label>相談内容（任意）</label><textarea id="question" rows="4" placeholder="気になっていることを書いてください"></textarea>
 <button onclick="fortune()">無料鑑定を試す</button>
-<p class="small">※これは開発中の試作版です。Core v3.9：決済接続前の注文管理コアを追加。注文ID発行、購入済み判定、同一鑑定の二重購入防止、鑑定結果のブラウザ保存、購入済み鑑定の復元に対応しました。</p>
+<p class="small">鑑定結果は娯楽・自己理解の参考情報です。医療・法律・投資など専門的判断の代替ではありません。</p>
 <p id="userStatus" class="modeBadge">生年月日と手の写真を入力して鑑定してください。</p>
 <div id="result"></div>
 </div>
@@ -2743,6 +2745,19 @@ body.devMode details:has(summary){display:block}
 <button type="button" id="saveProductConfigBtn">価格設定を保存</button>
 <div id="productConfigStatus"></div>
 </div>
+<section class="card userOnly" id="membershipPlan"><p class="eyebrow">PREMIUM MEMBERSHIP</p><h2>月額会員 ¥490 / 月</h2><p>毎月の運勢・時期の流れを継続して確認するための会員プランです。自動更新で、マイページから会員情報の確認・解約手続きへ進めます。</p><div class="membershipFeatures"><span>今日・週・月・年の流れ</span><span>過去の鑑定確認</span><span>マイページ</span><span>いつでも解約手続き</span></div><label class="consentLine"><input type="checkbox" id="membershipConsent"> 月額¥490の自動更新、<a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました</label><button type="button" id="membershipCheckoutBtn">月額会員を始める ¥490/月</button></section>
+<section class="card userOnly trustCard"><h2>安心してご利用いただくために</h2><p>入力された姓名・生年月日・手相画像は鑑定提供のために取り扱います。手相画像をAI学習へ利用する設定は初期OFFとし、別途明示的な同意なしに学習用途へ使用しません。</p><label class="consentLine"><input type="checkbox" id="aiTrainingConsent"> 手相画像のAI学習利用に任意で同意する（任意・初期OFF）</label><p class="small">保存期間・取扱いの詳細は<a href="/privacy.html">プライバシーポリシー</a>をご確認ください。</p></section>
+<footer class="siteFooter userOnly"><div><strong>総合占い</strong><p>姓名判断 × 生年月日 × 手相</p></div><nav><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/legal.html">特定商取引法に基づく表記</a><a href="/refund.html">返金・キャンセル</a><a href="/contact.html">お問い合わせ</a></nav><p class="small">© 2026 総合占い</p></footer>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const top=document.createElement('div');top.className='publicTopNav';top.innerHTML='<a class="brandMini" href="/">✦ 総合占い</a><a class="mypageTop" href="/mypage.html" aria-label="マイページ"><span class="personIcon">♙</span><span>マイページ</span></a>';document.body.prepend(top);
+ const paid=document.getElementById('stripeCheckoutBtn'); if(paid){const c=document.createElement('label');c.className='consentLine';c.innerHTML='<input type="checkbox" id="detailConsent"> ¥980の1回払いと <a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました';paid.before(c);paid.disabled=true;document.getElementById('detailConsent').addEventListener('change',e=>paid.disabled=!e.target.checked)}
+ document.getElementById('membershipCheckoutBtn')?.addEventListener('click',async()=>{if(!document.getElementById('membershipConsent').checked){alert('月額料金と利用条件をご確認ください。');return}try{const r=await fetch('/api/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();if(!r.ok)throw new Error(d.error||'会員登録を開始できません');location.href=d.url}catch(e){alert('会員登録を開始できませんでした：'+e.message)}});
+});
+</script>
+<style>
+.publicTopNav{position:fixed;top:0;left:0;right:0;z-index:9999;height:58px;padding:0 max(16px,calc((100vw - 1100px)/2));display:flex;align-items:center;justify-content:space-between;background:rgba(7,7,30,.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(223,190,96,.28)}.brandMini,.mypageTop{color:#f5df9b;text-decoration:none;font-weight:700}.mypageTop{display:flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid rgba(223,190,96,.42);border-radius:999px}.personIcon{font-size:20px}.fortuneHeader{padding-top:58px}.nameGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.membershipFeatures{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.membershipFeatures span{padding:10px;border:1px solid rgba(223,190,96,.25);border-radius:10px}.consentLine{display:block;margin:15px 0;font-size:.9rem;line-height:1.6}.consentLine input{width:auto;margin-right:7px}.consentLine a,.siteFooter a,.trustCard a{color:#f5df9b}.siteFooter{max-width:980px;margin:28px auto 0;padding:28px 20px 50px;border-top:1px solid rgba(223,190,96,.3);text-align:center}.siteFooter nav{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 18px;margin:16px 0}.modebar{display:none}.devOnly{display:none!important}body.dev-mode .modebar{display:block}body.dev-mode .devOnly{display:block!important}@media(max-width:600px){.nameGrid,.membershipFeatures{grid-template-columns:1fr}.mypageTop span:last-child{display:none}.mypageTop{padding:8px 11px}}
+</style>
 <script>
 const PALM_RULES={life:{long:'持久力を活かして長期戦に強い傾向',deep:'エネルギーを一点に集中しやすい傾向',faint:'無理を重ねず環境調整で力を出しやすい傾向'},head:{straight:'現実的に整理して判断する傾向',curved:'想像力と感覚を判断に取り入れる傾向',long:'考えを深掘りしてから動く傾向'},heart:{curved:'感情表現が比較的豊かな傾向',straight:'関係性を冷静に見極める傾向',long:'人との結びつきを大切にする傾向'}};
 function birthCore(b){const d=[...b.replaceAll('-','')].map(Number);let n=d.reduce((a,x)=>a+x,0);while(n>9)n=[...String(n)].reduce((a,x)=>a+Number(x),0);return n}
