@@ -4990,7 +4990,7 @@ document.getElementById('stripeCheckoutBtn')?.addEventListener('click',startStri
 .devPreviewBtn{margin-top:10px;background:linear-gradient(135deg,#6f45d8,#9a52df);border:1px solid #e5c86f}
 .photoConsentOverlay{position:fixed;inset:0;z-index:20000;background:rgba(3,3,18,.78);display:flex;align-items:center;justify-content:center;padding:18px}
 .photoConsentPanel{width:min(560px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#15103b,#0d0b29);border:1px solid rgba(229,200,111,.7);border-radius:22px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
-.photoConsentPanel h2{color:#f5df9b;margin-top:0}.photoConsentPanel .consentChoice{display:block;padding:12px 0;line-height:1.6}.photoConsentActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.photoConsentPanel h2{color:#f5df9b;margin-top:0}.photoConsentPanel p{color:#f5f1ff;opacity:1}.photoConsentPanel .small{color:#ddd5f5;opacity:1}.photoConsentPanel .consentChoice{display:flex;align-items:flex-start;gap:12px;padding:14px 0;line-height:1.55;color:#f5f1ff;font-weight:600}.photoConsentPanel .consentChoice input{flex:0 0 auto;width:22px;height:22px;margin:2px 0 0;accent-color:#9a52df}.photoConsentActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .photoConsentActions button{margin:0}.photoConsentActions .cancel{background:#26223e}
 .devNotice{max-width:980px;margin:70px auto 0;padding:10px 18px;color:#e8dca9;font-size:.82rem;text-align:center}
 @media(max-width:600px){.photoConsentActions{grid-template-columns:1fr}}
@@ -5067,8 +5067,23 @@ window.fortune=async function(){
    palm.qualityGate.message=score<.45?'写真は受付できました。弱い線は低信頼として慎重に読みます。':'解析可能です。';
    r.innerHTML=integrate(num,palm,t,q);
  }catch(e){
-   console.error(e);
-   r.innerHTML='<div class="captureError"><h3>📷 写真を確認できませんでした</h3><p>手のひら全体が写っている写真を選び直してください。</p></div>';
+   console.error('palm analysis fallback',e);
+   const fallbackPalm={
+     confidence:0,quality:'limited',
+     qualityGate:{status:'pass',score:0,reasons:['解析エンジンの一部を利用できませんでした'],message:'写真は受付できました。主要線は低信頼として断定を避けて表示します。'},
+     source:f?.name||'uploaded-image',
+     image:{width:0,height:0,analysisWidth:0,analysisHeight:0,orientation:'unknown',hand:{requested:document.getElementById('handSide')?.value||'auto',resolved:'unknown'}},
+     life:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
+     head:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
+     heart:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
+     principalLines:{detected:false,reason:'engine-fallback'}
+   };
+   lastPalmAnalysis=fallbackPalm;
+   try{r.innerHTML=integrate(num,fallbackPalm,t,q)}
+   catch(renderError){
+     console.error(renderError);
+     r.innerHTML='<div class="captureError"><h3>手相写真は受付できました</h3><p>主要線の自動判定は低信頼のため、今回は線の特徴を断定しません。生年月日・姓名の鑑定結果はそのまま表示できます。</p></div>';
+   }
  }
 };
 </script>
