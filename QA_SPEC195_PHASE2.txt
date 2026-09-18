@@ -1,0 +1,10 @@
+SPEC195 fixed product: PASS
+monthly 490: PASS
+11 chapter generator: PASS
+unverified name gated: PASS
+COMMON_FEATURE provenance: PASS
+second palm UI: PASS
+membership portal: PASS
+mypage: PASS
+one-time secure webhook retained: PASS
+subscription webhook: PASS
