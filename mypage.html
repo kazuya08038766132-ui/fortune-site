@@ -1,12 +1,15 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>マイページ｜総合占い</title>
-<style>body{font-family:system-ui;background:#090b24;color:#eee;margin:0;padding:24px}main{max-width:760px;margin:auto}.card{border:1px solid #d9b75b;border-radius:16px;padding:18px;margin:14px 0;background:#17113d}a,button{color:#ffe39a}button{background:#5427a8;border:1px solid #d9b75b;padding:12px;border-radius:10px}</style></head>
-<body><main><h1>マイページ</h1><div class="card"><h2>プレミアム会員</h2><div id="membership">確認中…</div><button id="manage" style="display:none">会員情報・解約を管理</button></div>
-<div class="card"><h2>購入済み詳細鑑定</h2><div id="order">この端末に購入情報がありません。</div></div><p><a href="/">鑑定ページへ戻る</a></p></main>
-<script>
-let membership=null;try{membership=JSON.parse(localStorage.getItem('fortune_membership_v1')||'null')}catch{}
-let paid=null;try{paid=JSON.parse(localStorage.getItem('fortune_paid_result_v1')||'null')}catch{}
-const mb=document.getElementById('membership'),manage=document.getElementById('manage');
-if(membership?.id){fetch('/api/membership/'+encodeURIComponent(membership.id)).then(r=>r.json()).then(d=>{membership=d;mb.textContent='状態：'+d.status+(d.current_period_end?' / 次回期間：'+new Date(d.current_period_end).toLocaleDateString('ja-JP'):'');if(['active','trialing'].includes(d.status)){manage.style.display='inline-block'}}).catch(()=>mb.textContent='会員状態を確認できませんでした。')}else mb.textContent='会員登録はありません。';
-if(paid?.id)document.getElementById('order').textContent='注文ID：'+paid.id+' / 決済確認済み';
-manage.onclick=async()=>{const r=await fetch('/api/create-customer-portal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({membershipId:membership.id})});const d=await r.json();if(d.url)location.href=d.url;else alert(d.error||'管理画面を開けませんでした');};
+<style>body{margin:0;background:linear-gradient(180deg,#080821,#130b35);color:#f4f0ff;font-family:system-ui,sans-serif;min-height:100vh}.top{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #8e7841}.top a{color:#f5df9b;text-decoration:none}.wrap{max-width:850px;margin:auto;padding:24px 18px}.card{background:rgba(31,18,70,.8);border:1px solid #b99b4d;border-radius:20px;padding:20px;margin:18px 0}.gold{color:#f5df9b}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.box{padding:16px;border:1px solid #594b79;border-radius:14px}.btn{display:block;width:100%;box-sizing:border-box;text-align:center;padding:14px;margin-top:12px;border:1px solid #e0c56d;border-radius:14px;background:linear-gradient(135deg,#7444d7,#9d4bd0);color:white;text-decoration:none;font-weight:700}button.btn{font:inherit}.small{opacity:.75;font-size:.86rem}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style></head>
+<body><div class="top"><a href="/">✦ 総合占い</a><b>👤 マイページ</b></div><main class="wrap">
+<h1 class="gold">マイページ</h1><p id="modeText">会員情報と鑑定履歴を確認できます。</p>
+<section class="card"><h2>月額会員</h2><p id="memberState">会員状態を確認中…</p><div id="memberContent" style="display:none"><div class="grid"><div class="box"><b>今日の流れ</b><p>目の前の優先順位を整え、小さく着手すると流れを作りやすい日です。</p></div><div class="box"><b>今週</b><p>前半は整理、後半は実行を意識するとメリハリをつけやすいでしょう。</p></div><div class="box"><b>今月</b><p>継続してきたことを見直し、伸ばす分野を絞るのに向く時期です。</p></div><div class="box"><b>今年</b><p>変化を急ぐより、土台を整えながら選択肢を増やすことがテーマです。</p></div></div></div>
+<button class="btn" id="portalBtn">会員情報・解約手続き</button></section>
+<section class="card"><h2>過去の鑑定</h2><div id="orders">この端末に保存された購入済み鑑定はまだありません。</div><a class="btn" href="/#paidCta">¥980 詳細鑑定を見る</a></section>
+<p class="small">開発確認版では ?dev=1 またはトップの開発確認ボタンから会員画面をプレビューできます。本番公開時は決済状態に基づく表示へ限定します。</p>
+</main><script>
+const qs=new URLSearchParams(location.search),dev=qs.get('dev')==='1'||localStorage.getItem('fortune_dev_membership')==='active';
+if(dev){memberState.textContent='開発確認：月額会員 ACTIVE（決済なしプレビュー）';memberContent.style.display='block';modeText.textContent='開発確認モードで会員向けコンテンツを表示しています。'}
+else{memberState.textContent='月額会員状態は決済情報に基づいて表示します。'}
+const order=localStorage.getItem('fortune_paid_order');if(order){try{const o=JSON.parse(order);orders.innerHTML='<div class="box"><b>¥980 総合・詳細鑑定</b><p>購入済み鑑定データがあります。</p></div>'}catch(e){}}
+portalBtn.onclick=async()=>{if(dev){alert('開発確認中です。本番ではStripe会員管理画面を開きます。');return}try{const membershipId=localStorage.getItem('fortune_membership_id');if(!membershipId)throw new Error('会員情報がありません');const r=await fetch('/api/create-customer-portal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({membershipId})});const d=await r.json();if(!r.ok)throw new Error(d.error||'会員管理を開けません');location.href=d.url}catch(e){alert(e.message)}};
 </script></body></html>

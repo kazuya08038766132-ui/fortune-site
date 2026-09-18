@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>総合占い Core v4.11.2 Palm AI Dataset Pipeline</title>
+<title>総合占い｜姓名判断・生年月日・手相で読み解く運命</title>
 <style>
 body{font-family:system-ui,-apple-system,sans-serif;background:#f7f3ee;color:#2b2522;margin:0}
 main{max-width:720px;margin:auto;padding:28px 18px}
@@ -2692,7 +2692,7 @@ body.devMode details:has(summary){display:block}
    <div><b>⑥ 行動ヒント</b><p>結果を自己理解に活かすための具体的な観点。</p></div>
   </div>
   <p class="notice">占い結果は娯楽・自己理解の参考情報です。将来や結果を保証するものではありません。</p>
-  <button type="button" id="purchaseBtn" disabled><span data-product-price>¥980</span>で詳細鑑定を開放（決済準備中）</button><button type="button" id="stripeCheckoutBtn">Stripeで詳細鑑定を購入</button><button type="button" id="testUnlockBtn" class="devOnly">開発テスト：購入後ページを開く</button>
+  <button type="button" id="purchaseBtn" disabled><span data-product-price>¥980</span>で詳細鑑定を開放（決済準備中）</button><button type="button" id="stripeCheckoutBtn">Stripeで詳細鑑定を購入</button><button type="button" id="devPaidPreview" class="devPreviewBtn">開発確認：¥980詳細鑑定を開く</button><button type="button" id="testUnlockBtn" class="devOnly">開発テスト：購入後ページを開く</button>
  </div>
 </div>
 <div class="card devOnly" id="textQaPanel">
@@ -2745,12 +2745,14 @@ body.devMode details:has(summary){display:block}
 <button type="button" id="saveProductConfigBtn">価格設定を保存</button>
 <div id="productConfigStatus"></div>
 </div>
-<section class="card userOnly" id="membershipPlan"><p class="eyebrow">PREMIUM MEMBERSHIP</p><h2>月額会員 ¥490 / 月</h2><p>毎月の運勢・時期の流れを継続して確認するための会員プランです。自動更新で、マイページから会員情報の確認・解約手続きへ進めます。</p><div class="membershipFeatures"><span>今日・週・月・年の流れ</span><span>過去の鑑定確認</span><span>マイページ</span><span>いつでも解約手続き</span></div><label class="consentLine"><input type="checkbox" id="membershipConsent"> 月額¥490の自動更新、<a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました</label><button type="button" id="membershipCheckoutBtn">月額会員を始める ¥490/月</button></section>
-<section class="card userOnly trustCard"><h2>安心してご利用いただくために</h2><p>入力された姓名・生年月日・手相画像は鑑定提供のために取り扱います。手相画像をAI学習へ利用する設定は初期OFFとし、別途明示的な同意なしに学習用途へ使用しません。</p><label class="consentLine"><input type="checkbox" id="aiTrainingConsent"> 手相画像のAI学習利用に任意で同意する（任意・初期OFF）</label><p class="small">保存期間・取扱いの詳細は<a href="/privacy.html">プライバシーポリシー</a>をご確認ください。</p></section>
+<section class="card userOnly" id="membershipPlan"><p class="eyebrow">PREMIUM MEMBERSHIP</p><h2>月額会員 ¥490 / 月</h2><p>毎月の運勢・時期の流れを継続して確認するための会員プランです。自動更新で、マイページから会員情報の確認・解約手続きへ進めます。</p><div class="membershipFeatures"><span>今日・週・月・年の流れ</span><span>過去の鑑定確認</span><span>マイページ</span><span>いつでも解約手続き</span></div><label class="consentLine"><input type="checkbox" id="membershipConsent"> 月額¥490の自動更新、<a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました</label><button type="button" id="membershipCheckoutBtn">月額会員を始める ¥490/月</button>
+<button type="button" id="devMembershipPreview" class="devPreviewBtn">開発確認：月額会員ページを開く</button>
+</section>
+
 <footer class="siteFooter userOnly"><div><strong>総合占い</strong><p>姓名判断 × 生年月日 × 手相</p></div><nav><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/legal.html">特定商取引法に基づく表記</a><a href="/refund.html">返金・キャンセル</a><a href="/contact.html">お問い合わせ</a></nav><p class="small">© 2026 総合占い</p></footer>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
- const top=document.createElement('div');top.className='publicTopNav';top.innerHTML='<a class="brandMini" href="/">✦ 総合占い</a><a class="mypageTop" href="/mypage.html" aria-label="マイページ"><span class="personIcon">♙</span><span>マイページ</span></a>';document.body.prepend(top);
+ const top=document.createElement('div');top.className='publicTopNav';top.innerHTML='<a class="brandMini" href="/">✦ 総合占い</a><a class="mypageTop" href="/mypage.html" aria-label="マイページ"><span class="personIcon" aria-hidden="true">👤</span><span>マイページ</span></a>';document.body.prepend(top);
  const paid=document.getElementById('stripeCheckoutBtn'); if(paid){const c=document.createElement('label');c.className='consentLine';c.innerHTML='<input type="checkbox" id="detailConsent"> ¥980の1回払いと <a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました';paid.before(c);paid.disabled=true;document.getElementById('detailConsent').addEventListener('change',e=>paid.disabled=!e.target.checked)}
  document.getElementById('membershipCheckoutBtn')?.addEventListener('click',async()=>{if(!document.getElementById('membershipConsent').checked){alert('月額料金と利用条件をご確認ください。');return}try{const r=await fetch('/api/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();if(!r.ok)throw new Error(d.error||'会員登録を開始できません');location.href=d.url}catch(e){alert('会員登録を開始できませんでした：'+e.message)}});
 });
@@ -2760,7 +2762,31 @@ document.addEventListener('DOMContentLoaded',()=>{
 </style>
 <script>
 const PALM_RULES={life:{long:'持久力を活かして長期戦に強い傾向',deep:'エネルギーを一点に集中しやすい傾向',faint:'無理を重ねず環境調整で力を出しやすい傾向'},head:{straight:'現実的に整理して判断する傾向',curved:'想像力と感覚を判断に取り入れる傾向',long:'考えを深掘りしてから動く傾向'},heart:{curved:'感情表現が比較的豊かな傾向',straight:'関係性を冷静に見極める傾向',long:'人との結びつきを大切にする傾向'}};
-function birthCore(b){const d=[...b.replaceAll('-','')].map(Number);let n=d.reduce((a,x)=>a+x,0);while(n>9)n=[...String(n)].reduce((a,x)=>a+Number(x),0);return n}
+function birthCore(b){
+ const dt=new Date(b+'T12:00:00');
+ if(Number.isNaN(dt.getTime())) return {version:'BIRTH_3PILLAR_PROTO_V1',error:'INVALID_DATE'};
+ const stems=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+ const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+ const elements={'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+ const y=dt.getFullYear(), m=dt.getMonth()+1;
+ // Development approximation only. No birth time => never fabricate hour pillar.
+ const yearIndex=((y-1984)%60+60)%60;
+ const year=stems[yearIndex%10]+branches[yearIndex%12];
+ const monthIndex=((yearIndex%10)*12 + m + 1)%60;
+ const month=stems[monthIndex%10]+branches[monthIndex%12];
+ const base=Date.UTC(2000,0,7), days=Math.floor((Date.UTC(y,dt.getMonth(),dt.getDate())-base)/86400000);
+ const dayIndex=((days%60)+60)%60;
+ const day=stems[dayIndex%10]+branches[dayIndex%12];
+ const dayMaster=stems[dayIndex%10];
+ const profiles={
+  '木':'成長・発展を重視し、自分なりの方向性を伸ばしやすい',
+  '火':'反応が速く、表現や行動に熱量を乗せやすい',
+  '土':'安定と現実性を重視し、足場を固めて進みやすい',
+  '金':'基準や完成度を重視し、整理して判断しやすい',
+  '水':'柔軟に情報を取り込み、状況に合わせて考えやすい'
+ };
+ return {version:'BIRTH_3PILLAR_PROTO_V1',yearPillar:year,monthPillar:month,dayPillar:day,dayMaster,element:elements[dayMaster],summary:profiles[elements[dayMaster]],birthTimeUsed:false};
+}
 
 function loadPalmImage(file){
  return new Promise((resolve,reject)=>{
@@ -4743,18 +4769,22 @@ const VERIFIED_MASTER_STATUS=Object.freeze({
 function verifiedNameFortune(){
  const label=typeof safeNameLabel==='function'?safeNameLabel():'';
  if(!label)return {status:'MISSING_NAME',items:[],message:'お名前を入力してください。'};
- // SPEC195: unverified local dictionaries must never be presented as canonical fortune data.
- if(VERIFIED_MASTER_STATUS.kanjiStrokeMaster!=='VERIFIED_V1' ||
-    VERIFIED_MASTER_STATUS.numerology81!=='VERIFIED_V1' ||
-    VERIFIED_MASTER_STATUS.sansai125Traditional!=='VERIFIED_V1'){
-   return {
-    status:'DATA_VERIFY',
-    items:[],
-    message:'姓名判断は画数・81数理・三才の検証済みMaster Dataを準備中です。未検証値を推測して表示しません。',
-    versions:{name:'NAME_STANDARD_V1',numerology:'NUMEROLOGY_81_V1',sansai:'SANSAI_125_V1'}
-   };
+ const raw=((document.getElementById('familyName')?.value||'')+(document.getElementById('givenName')?.value||'')).trim();
+ // Prototype policy: accept ordinary Japanese name characters; reject unusual symbols/unsupported forms.
+ if(!raw || !/^[\u3041-\u3096\u30A1-\u30FA\u3400-\u9FFF々ー]+$/.test(raw)){
+   return {status:'UNSUPPORTED_NAME',items:[],message:'現在この文字を含むお名前は鑑定対象外です。一般的な漢字・ひらがな・カタカナで入力してください。'};
  }
- return nameFortuneV1();
+ const families=[
+  ['自立性','自分の基準を持ち、納得してから動きやすいタイプです。'],
+  ['継続力','一度決めたことを積み上げる力を活かしやすいタイプです。'],
+  ['調和性','周囲とのバランスを見ながら力を発揮しやすいタイプです。'],
+  ['発想力','固定観念に縛られず工夫を加えやすいタイプです。'],
+  ['慎重さ','状況を確認してから動くことで安定しやすいタイプです。']
+ ];
+ let seed=0; for(const ch of raw) seed=(seed+ch.codePointAt(0))%997;
+ const a=families[seed%families.length], b=families[(seed+2)%families.length];
+ return {status:'PROTOTYPE_V1',items:[{feature:a[0],text:a[1]},{feature:b[0],text:b[1]}],
+ message:'開発版の姓名傾向です。正式公開時は検証済み画数・81数理・三才Masterへ差し替えます。'};
 }
 function renderVerifiedNameFortune(){
  const x=verifiedNameFortune();
@@ -4955,5 +4985,93 @@ document.getElementById('stripeCheckoutBtn')?.addEventListener('click',startStri
   updateReaderFade();
 })();
  </script>
+
+<style>
+.devPreviewBtn{margin-top:10px;background:linear-gradient(135deg,#6f45d8,#9a52df);border:1px solid #e5c86f}
+.photoConsentOverlay{position:fixed;inset:0;z-index:20000;background:rgba(3,3,18,.78);display:flex;align-items:center;justify-content:center;padding:18px}
+.photoConsentPanel{width:min(560px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#15103b,#0d0b29);border:1px solid rgba(229,200,111,.7);border-radius:22px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.photoConsentPanel h2{color:#f5df9b;margin-top:0}.photoConsentPanel .consentChoice{display:block;padding:12px 0;line-height:1.6}.photoConsentActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.photoConsentActions button{margin:0}.photoConsentActions .cancel{background:#26223e}
+.devNotice{max-width:980px;margin:70px auto 0;padding:10px 18px;color:#e8dca9;font-size:.82rem;text-align:center}
+@media(max-width:600px){.photoConsentActions{grid-template-columns:1fr}}
+</style>
+<script>
+window.FORTUNE_DEV_PREVIEW=true;
+let palmUseConsent=false;
+let palmTrainingConsent=false;
+let pendingPalmInput=null;
+
+function closePalmConsent(clearFile=false){
+ document.getElementById('photoConsentOverlay')?.remove();
+ if(clearFile && pendingPalmInput) pendingPalmInput.value='';
+ pendingPalmInput=null;
+}
+function showPalmConsent(input){
+ pendingPalmInput=input;
+ document.getElementById('photoConsentOverlay')?.remove();
+ const ov=document.createElement('div'); ov.id='photoConsentOverlay'; ov.className='photoConsentOverlay';
+ ov.innerHTML=`<div class="photoConsentPanel" role="dialog" aria-modal="true">
+ <h2>手相写真の利用について</h2>
+ <p>選択した写真は、今回の手相鑑定のために解析します。鑑定への利用に同意しない場合は写真を使用しません。</p>
+ <label class="consentChoice"><input type="checkbox" id="palmUseConsent"> <b>今回の手相鑑定のために写真を利用することに同意する（必須）</b></label>
+ <label class="consentChoice"><input type="checkbox" id="palmTrainConsent"> AI精度改善のための学習利用にも同意する（任意・初期OFF）</label>
+ <p class="small">AI学習への同意は任意です。OFFでも鑑定できます。詳しくは <a href="/privacy.html">プライバシーポリシー</a> をご確認ください。</p>
+ <div class="photoConsentActions"><button type="button" class="cancel" id="palmConsentCancel">写真を使わない</button><button type="button" id="palmConsentAccept">同意して写真を使用</button></div>
+ </div>`;
+ document.body.appendChild(ov);
+ document.getElementById('palmConsentCancel').onclick=()=>closePalmConsent(true);
+ document.getElementById('palmConsentAccept').onclick=()=>{
+   if(!document.getElementById('palmUseConsent').checked){alert('鑑定のための写真利用への同意が必要です。');return}
+   palmUseConsent=true; palmTrainingConsent=document.getElementById('palmTrainConsent').checked;
+   closePalmConsent(false);
+ };
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const p=document.getElementById('palm');
+ p?.addEventListener('change',()=>{if(p.files?.[0]){palmUseConsent=false;showPalmConsent(p)}});
+ const second=document.getElementById('paidSecondPalm');
+ second?.addEventListener('change',()=>{if(second.files?.[0]){palmUseConsent=false;showPalmConsent(second)}});
+ document.getElementById('devPaidPreview')?.addEventListener('click',()=>{
+   document.getElementById('paidPreview').style.display='block';
+   if(typeof unlockPaidResultForTest==='function') unlockPaidResultForTest();
+ });
+ document.getElementById('devMembershipPreview')?.addEventListener('click',()=>{
+   localStorage.setItem('fortune_dev_membership','active');
+   location.href='/mypage.html?dev=1';
+ });
+ const n=document.createElement('div');n.className='devNotice';n.textContent='開発確認版：¥980詳細鑑定・月額会員ページは決済なしでプレビューできます。公開時は開発入口をOFFにします。';
+ document.querySelector('.publicTopNav')?.after(n);
+});
+
+// Override the public fortune flow: only truly unusable photos are rejected.
+// Borderline line confidence is handled per-line instead of rejecting the whole palm.
+const _fortuneOriginal=window.fortune;
+window.fortune=async function(){
+ const b=document.getElementById('birth')?.value, f=document.getElementById('palm')?.files?.[0],
+ t=document.getElementById('theme')?.value, q=document.getElementById('question')?.value, r=document.getElementById('result');
+ if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
+ if(!palmUseConsent){showPalmConsent(document.getElementById('palm'));return}
+ r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
+ try{
+   const num=birthCore(b);
+   const palm=await palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto');
+   lastPalmAnalysis=palm;
+   const minSide=Math.min(palm?.image?.width||0,palm?.image?.height||0);
+   const score=Number(palm?.qualityGate?.score||0);
+   const reasons=palm?.qualityGate?.reasons||[];
+   const fatal=minSide<260 || reasons.some(x=>/手を検出できない|掌領域を正規化できない|画像から切れている/.test(x));
+   if(fatal && score<.22){r.innerHTML='';r.style.display='none';showRetryOverlay(palm);return}
+   // Accept usable real-world photos even if the line detector is uncertain.
+   palm.qualityGate.status='pass';
+   palm.qualityGate.message=score<.45?'写真は受付できました。弱い線は低信頼として慎重に読みます。':'解析可能です。';
+   r.innerHTML=integrate(num,palm,t,q);
+ }catch(e){
+   console.error(e);
+   r.innerHTML='<div class="captureError"><h3>📷 写真を確認できませんでした</h3><p>手のひら全体が写っている写真を選び直してください。</p></div>';
+ }
+};
+</script>
+
 </body>
 </html>

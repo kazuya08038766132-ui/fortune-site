@@ -1,0 +1,11 @@
+SPEC195 development preview patch
+- public title / person icon: PASS
+- photo consent moved to upload modal: PASS
+- AI training consent optional and default OFF: PASS
+- ¥980 no-payment development preview: PASS
+- ¥490 membership no-payment development preview: PASS
+- My Page membership preview: PASS
+- birth prototype upgraded from digit-sum to deterministic 3-pillar-like prototype: PASS (development approximation; no hour pillar)
+- name prototype accepts ordinary Japanese chars, rejects unsupported symbols: PASS
+- palm whole-photo rejection relaxed; low-confidence handled per line: PASS
+- production-trained palm AI: NOT CLAIMED / DATA_VERIFY
