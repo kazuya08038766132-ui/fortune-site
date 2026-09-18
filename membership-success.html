@@ -1,16 +1,3 @@
-<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>会員登録確認</title><body style="font-family:system-ui;background:#090b24;color:#fff;padding:30px">
-<main style="max-width:680px;margin:auto"><h1>会員登録を確認しています</h1><div id="status">少々お待ちください。</div></main>
-<script>
-const id=new URLSearchParams(location.search).get('membership_id');
-async function check(){
- const r=await fetch('/api/membership/'+encodeURIComponent(id)); if(!r.ok){setTimeout(check,1800);return}
- const d=await r.json();
- if(['active','trialing'].includes(d.status)){
-  localStorage.setItem('fortune_membership_v1',JSON.stringify(d));
-  document.getElementById('status').innerHTML='<h2>プレミアム会員登録完了</h2><p>月額会員機能を利用できます。</p><a style="color:#f4df9a" href="/">鑑定ページへ戻る</a> ｜ <a style="color:#f4df9a" href="/mypage.html">マイページ</a>';return;
- }
- document.getElementById('status').textContent='決済状態を確認しています…';setTimeout(check,1800);
-}
-if(id)check(); else document.getElementById('status').textContent='会員IDがありません。';
-</script></body></html>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>会員登録確認｜総合占い</title>
+<style>body{margin:0;background:linear-gradient(180deg,#080821,#150b37);color:#f4f0ff;font-family:system-ui}.w{max-width:700px;margin:auto;padding:80px 18px}.c{background:#17113d;border:1px solid #91783e;border-radius:22px;padding:28px;text-align:center}h1{color:#f3d986}.b{display:block;padding:14px;margin:12px 0;background:#7047d9;color:#fff;border-radius:12px;text-decoration:none}</style></head>
+<body><main class="w"><section class="c"><h1>月額会員のお申し込みを確認しています</h1><p>この画面を開いただけでは会員権限は付与されません。Stripe Webhookで契約状態を確認後、マイページへ反映します。</p><a class="b" href="/mypage.html">マイページで状態を確認</a><a class="b" href="/">トップへ</a></section></main></body></html>

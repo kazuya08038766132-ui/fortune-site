@@ -1,15 +1,15 @@
-<!doctype html><html lang="ja"><meta charset="utf-8"><title>決済確認</title>
-<body><main><h1>決済を確認しています</h1><div id="status">少々お待ちください。</div></main>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>購入完了｜総合占い</title>
+<style>body{margin:0;background:linear-gradient(180deg,#080821,#150b37);color:#f4f0ff;font-family:system-ui;line-height:1.8}.w{max-width:720px;margin:auto;padding:80px 18px}.c{background:#17113d;border:1px solid #91783e;border-radius:22px;padding:28px;text-align:center}h1{color:#f3d986}.b{display:block;padding:14px;margin:12px 0;border-radius:12px;background:#7047d9;color:#fff;text-decoration:none}</style></head>
+<body><main class="w"><section class="c"><h1>詳細鑑定の購入を確認しています</h1><p id="msg">支払い状態を確認中です。</p><div id="actions"></div></section></main>
 <script>
-const p=new URLSearchParams(location.search),id=p.get('order_id');
-async function check(){
- const r=await fetch('/api/order/'+encodeURIComponent(id)),d=await r.json();
- if(d.status==='paid'){
-  localStorage.setItem('fortune_paid_result_v1',JSON.stringify(d));
-  document.getElementById('status').innerHTML='<h2>決済完了</h2><p>詳細鑑定を保存しました。</p><a href="/">鑑定ページへ戻る</a>';
-  return;
- }
- setTimeout(check,1500);
-}
-if(id)check(); else document.getElementById('status').textContent='注文IDがありません。';
+(async()=>{
+ const id=new URLSearchParams(location.search).get('order_id');
+ if(!id){msg.textContent='注文番号を確認できません。マイページから購入履歴をご確認ください。';actions.innerHTML='<a class="b" href="/mypage.html">マイページへ</a>';return}
+ try{
+  const r=await fetch('/api/account-orders/claim',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':(await (await fetch('/api/csrf-token')).json()).token},body:JSON.stringify({order_id:id})});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'支払い確認中です');
+  msg.textContent='支払い済み注文を確認しました。';
+  actions.innerHTML=`<a class="b" href="/premium-reading.html?order_id=${encodeURIComponent(id)}">総合詳細鑑定を開く</a><a class="b" href="/mypage.html">マイページへ</a>`;
+ }catch(e){msg.textContent='まだ支払い済み注文を確認できません。Webhook反映後にマイページから再度確認できます。';actions.innerHTML='<a class="b" href="/mypage.html">マイページへ</a>'}
+})();
 </script></body></html>

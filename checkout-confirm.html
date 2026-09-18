@@ -1,0 +1,25 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>購入内容の最終確認｜総合占い</title><style>body{margin:0;background:linear-gradient(180deg,#080821,#120a31);color:#f3efff;font-family:system-ui,-apple-system,sans-serif;line-height:1.85}main{max-width:860px;margin:auto;padding:92px 20px 70px}a{color:#f3d986}h1,h2{color:#f3d986;line-height:1.35}h1{font-size:2rem}.box{background:rgba(22,16,57,.9);border:1px solid #8f7638;border-radius:18px;padding:22px;margin:18px 0}.nav{position:fixed;z-index:10;top:0;left:0;right:0;padding:16px 20px;background:#090b24f2;border-bottom:1px solid #594b2d}.note{padding:12px 14px;border-left:3px solid #f3d986;background:#1c1646;border-radius:8px}.warn{padding:12px 14px;border:1px solid #8b6b35;background:#211735;border-radius:10px}.grid p{margin:.6em 0}.muted,small{color:#bbb}ul{padding-left:1.4em}</style></head><body><div class="nav"><a href="/">← 総合占いへ戻る</a></div><main><h1>購入内容の最終確認</h1>
+<div class="box">
+<p class="note">このページは特定商取引法の最終確認画面要件を実装するための開発版テンプレートです。実際のStripe遷移前に商品別の内容を動的表示します。</p>
+<div id="orderSummary"><p><b>商品：</b><span id="productName">総合詳細鑑定</span></p><p><b>数量：</b>1</p><p><b>価格：</b><span id="price">980円（税込）</span></p><p><b>支払時期：</b><span id="payTiming">申込み時</span></p><p><b>提供時期：</b>決済確認後、原則直ちに提供</p><p><b>自動更新：</b><span id="renewal">なし</span></p><p><b>解約・返金：</b><a href="/refund.html">返金・キャンセル条件を確認</a></p></div>
+<label style="display:flex;gap:10px;align-items:flex-start;margin:20px 0"><input id="confirm" type="checkbox" style="width:22px;height:22px;margin-top:3px"><span>上記の購入内容、<a href="/terms.html">利用規約</a>、<a href="/legal.html">特定商取引法に基づく表記</a>を確認しました。</span></label>
+<button id="go" disabled style="width:100%;padding:15px;border-radius:14px;border:1px solid #f3d986;background:#6f45d8;color:white;font-weight:700">決済へ進む</button>
+</div><script>
+const q=new URLSearchParams(location.search),monthly=q.get('product')==='membership';
+if(monthly){productName.textContent='月額会員';price.textContent='490円（税込）/月';payTiming.textContent='申込み時および各更新日';renewal.textContent='解約まで月単位で自動更新';}
+confirm.onchange=()=>go.disabled=!confirm.checked;
+go.onclick=async()=>{
+ go.disabled=true;go.textContent='決済画面を準備しています…';
+ try{
+   const payload=monthly
+     ? {consent:true}
+     : {birth:localStorage.getItem('fortune_birth')||'',theme:localStorage.getItem('fortune_theme')||'総合',question:localStorage.getItem('fortune_question')||''};
+   const endpoint=monthly?'/api/create-subscription-checkout':'/api/create-checkout-session';
+   const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+   const d=await r.json();
+   if(!r.ok)throw new Error(d.error||'決済画面を開始できません');
+   if(!d.url)throw new Error('決済URLを取得できません');
+   location.href=d.url;
+ }catch(e){alert(e.message);go.disabled=false;go.textContent='決済へ進む'}
+};
+</script><p><small>最終更新：2026年9月19日</small></p></main></body></html>

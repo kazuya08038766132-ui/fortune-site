@@ -2528,7 +2528,7 @@ body.devMode details:has(summary){display:block}
 .specPaidChapters{margin-top:16px;padding:14px;border:1px solid rgba(217,181,90,.45);border-radius:14px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
-</head>
+<script src="/spec195-client.js"></script></head>
 <body>
 
 <header class="fortuneHeader">
@@ -5023,6 +5023,8 @@ function showPalmConsent(input){
  document.getElementById('palmConsentAccept').onclick=()=>{
    if(!document.getElementById('palmUseConsent').checked){alert('鑑定のための写真利用への同意が必要です。');return}
    palmUseConsent=true; palmTrainingConsent=document.getElementById('palmTrainConsent').checked;
+   window.Spec195?.recordConsent?.('PALM_READING',true);
+   window.Spec195?.recordConsent?.('PALM_AI_TRAINING',palmTrainingConsent);
    closePalmConsent(false);
  };
 }
@@ -5086,6 +5088,27 @@ window.fortune=async function(){
    }
  }
 };
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const detail=document.getElementById('stripeCheckoutBtn');
+  if(detail) detail.addEventListener('click',(ev)=>{
+    if(window.FORTUNE_DEV_PREVIEW && new URLSearchParams(location.search).get('dev')==='1') return;
+    ev.preventDefault();ev.stopImmediatePropagation();
+    localStorage.setItem('fortune_birth',document.getElementById('birth')?.value||'');
+    localStorage.setItem('fortune_theme',document.getElementById('theme')?.value||'総合');
+    localStorage.setItem('fortune_question',document.getElementById('question')?.value||'');
+    location.href='/checkout-confirm.html?product=detail';
+  },true);
+  const member=document.getElementById('membershipCheckoutBtn');
+  if(member) member.addEventListener('click',(ev)=>{
+    if(window.FORTUNE_DEV_PREVIEW && new URLSearchParams(location.search).get('dev')==='1') return;
+    ev.preventDefault();ev.stopImmediatePropagation();
+    location.href='/checkout-confirm.html?product=membership';
+  },true);
+});
 </script>
 
 </body>
