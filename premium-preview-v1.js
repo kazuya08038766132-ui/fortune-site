@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const BUILD="SPEC195-BUILD-07";
+const BUILD="SPEC195-BUILD-33";
 function renderPremiumPreview(){
  const host=document.getElementById("premiumDevPreview"); if(!host)return;
  const r=window.lastSpec195Reading;

@@ -1,14 +1,16 @@
 (() => {
 "use strict";
-const BUILD="SPEC195-BUILD-32",$=id=>document.getElementById(id);
+const BUILD="SPEC195-BUILD-33",$=id=>document.getElementById(id);
 const esc=v=>window.SPEC195?.safeText(v)??String(v??"");
 function show(html){const r=$("result");if(!r)return;r.style.display="block";r.innerHTML=html;r.scrollIntoView({behavior:"smooth",block:"start"})}
 function setBtn(t,d=false){const b=$("freeFortuneButton");if(b){b.textContent=t;b.disabled=d}}
 async function run(){
  setBtn("鑑定処理を開始しました…",true);
  const birth=$("birth")?.value||"", palm=$("palm")?.files?.[0], theme=$("theme")?.value||"総合",q=$("question")?.value||"";
- const fullName=($("fullName")?.value||$("name")?.value||"").trim();
- if(!birth||!palm){show('<div class="captureError"><h3>入力を確認してください</h3><p>生年月日と利き手の手のひら写真が必要です。</p></div>');setBtn("無料鑑定を試す");return}
+ const family=($("familyName")?.value||"").trim(), given=($("givenName")?.value||"").trim();
+ const fullName=(family&&given)?`${family} ${given}`:(family||given||$("fullName")?.value||$("name")?.value||"").trim();
+ if(!family||!given||!birth||!palm){show('<div class="captureError"><h3>入力を確認してください</h3><p>姓・名・生年月日・利き手の手のひら写真を入力してください。</p></div>');setBtn("無料鑑定を試す");return}
+ const bd=new Date(birth+"T00:00:00"); if(!Number.isFinite(bd.getTime())||bd>new Date()){show('<div class="captureError"><h3>生年月日を確認してください</h3><p>未来の日付は生年月日に指定できません。</p></div>');setBtn("無料鑑定を試す");return}
  try{if(typeof palmUseConsent!=="undefined"&&!palmUseConsent){if(typeof showPalmConsent==="function")showPalmConsent($("palm"));show('<div class="notice"><b>写真利用の同意を確認してください。</b></div>');setBtn("無料鑑定を試す");return}}catch(e){}
  const palmQuality=await window.PalmPublicQuality.quality(palm);
  if(palmQuality.status!=="ACCEPT"){
@@ -18,13 +20,17 @@ async function run(){
  window.lastPalmPublicQuality=palmQuality;
  const x=window.SPEC195.build({fullName,birth,theme,q});
  const bp=window.SPEC195.freeBirthSummary(x.birth);
+ const publicName=window.SPEC195.freeNameSummary(x.name,fullName);
+ const publicPalm=window.SPEC195.freePalmSummary(x.palm,$("dominantHand")?.value||"right");
+ const publicFusion=window.SPEC195.freeFusionSummary(x,theme);
  show(`<section class="safeFreeResult"><h2>${esc(theme)}・無料鑑定</h2>
- <h3>姓名</h3><p>${esc(x.name.message)}</p>
- <h3>生年月日</h3><p>${bp}</p>
- <h3>手相</h3><p>${esc(x.palm.message)}</p>
- <h3>三占術統合</h3><p>${esc(x.fusion.message)} <small>状態：${x.fusion.status}</small></p>
- ${q?`<h3>ご相談</h3><p>${esc(q)}</p>`:""}
- <p class="small">開発確認用 ${BUILD} / SPEC195 Engine ${esc(x.version)}</p></section>`);
+ <p><b>${esc(family)} ${esc(given)}さん</b>の3つの視点を、確認できた情報から順に読み解きます。</p>
+ <h3>姓名から見るあなた</h3><p>${publicName}</p>
+ <h3>生年月日から見るあなた</h3><p>${bp}</p>
+ <h3>手相から見る現在の傾向</h3><p>${publicPalm}</p>
+ <h3>総合メッセージ</h3><p>${publicFusion}</p>
+ ${q?`<h3>ご相談テーマ</h3><p>「${esc(q)}」については、上の傾向を土台に、焦らず選択肢を整理していくことがポイントです。詳細鑑定では仕事・金運・人間関係などの章に分けて深掘りします。</p>`:""}
+ <p class="small">鑑定は娯楽・自己理解の参考情報です。開発確認 ${BUILD}</p></section>`);
  window.lastSpec195Reading=x;
  try{sessionStorage.setItem("fortune_reading_v1",JSON.stringify(x));sessionStorage.setItem("fortune_full_name",fullName);sessionStorage.setItem("fortune_birth",birth);sessionStorage.setItem("fortune_theme",theme);sessionStorage.setItem("fortune_question",q)}catch(e){}
  const paid=$("paidCta");if(paid)paid.style.display="block";

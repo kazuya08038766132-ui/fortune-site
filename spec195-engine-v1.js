@@ -73,6 +73,29 @@ function freeBirthSummary(b){
  const map={"木":"成長や柔軟さ","火":"行動力や表現力","土":"安定感や現実性","金":"判断力や筋の通し方","水":"柔軟な思考や感受性"};
  return `生年月日から見ると、${map[e]||"自分らしい判断軸"}を意識しやすい傾向があります。詳しい干支・日主などの専門データは詳細鑑定で解説します。`;
 }
+
+function freeNameSummary(n,fullName){
+ const display=String(fullName||n?.name||"").replace(/\s+/g," ").trim();
+ if(n?.status==="OK_VERIFIED_NEW_FORM"&&n.formal){
+  const g=n.formal.grids||{}, core=n.formal.numerology?.jin?.fortune||"";
+  return `${safeText(display)}というお名前を新字体の確認済み画数で見ると、人格${g.jin}画・地格${g.chi}画・総格${g.sou}画です。${core?`人格は「${core}」の分類。`:""}無料鑑定では全体像を簡潔に、詳細鑑定では五格・81数理・三才を分けて読みます。`;
+ }
+ return `${safeText(display)}というお名前を受け取りました。無料鑑定では名前全体の印象を中心に扱い、未確認の漢字画数を勝手に補いません。画数を正式に確認できた文字は、詳細鑑定で五格・81数理・三才へ段階的に反映します。`;
+}
+function freePalmSummary(p,dominant="right"){
+ const hand=dominant==="left"?"左手":"右手";
+ if(p?.quality?.status==="ACCEPT"||p?.status==="IMAGE_ACCEPTED"){
+  return `${hand}の手のひら写真は鑑定に使える品質で受け付けました。無料版では利き手を「現在の行動や選択に表れやすい傾向」を見る視点として扱います。主要線の位置や長さを画像から断定する部分は、検証できた解析結果だけを使います。`;
+ }
+ return `${hand}を現在の傾向を見る手として扱います。写真の状態を確認しながら、読み取れない線を無理に推測しません。`;
+}
+function freeFusionSummary(r,theme="総合"){
+ const b=r?.birth, e=b?.element||"", map={"木":"伸びしろを育てる","火":"動きながら形にする","土":"足元を整えて積み上げる","金":"基準を決めて選び取る","水":"状況を見ながら柔軟に進む"};
+ const axis=map[e]||"自分のペースと判断軸を整える";
+ const themeText={"恋愛":"相手を決めつけるより、自分が心地よい距離感を言葉にすること","仕事":"得意な進め方を一つ決め、継続して成果につなげること","金運":"大きな一発より、使い方と残し方のルールを整えること","相性":"相手の本心を決めつけず、違いと共通点を分けて見ること","総合":"今ある強みを一つずつ行動に移し、無理なく続けること"}[theme]||"焦らず選択肢を整理すること";
+ return `今回の中心テーマは「${axis}」です。${themeText}を意識すると、今の自分に合う選択を整理しやすくなります。3つの占術で確認できる根拠は分けて扱い、読み取れない部分を事実のようには補いません。`;
+}
+
 function premiumHtml(reading){
  return reading.premium.map(ch=>`<section class="premiumChapter" data-chapter="${ch.id}"><h2>${safeText(ch.title)}</h2>${ch.technical?`<div class="technicalBirth"><b>命式データ</b><p>${ch.technical}</p></div>`:""}<p>${ch.text}</p>${ch.status==="NEEDS_OPPOSITE_PALM"?'<p class="notice">この章は反対の手の写真を追加すると比較できます。</p>':""}</section>`).join("");
 }
@@ -120,5 +143,5 @@ function nameFromVerifiedStrokes(surnameStrokes,givenStrokes){
   sansai:sansai125(ten,jin,chi)};
 }
 
-window.SPEC195={VERSION,FEATURE_KEYS,PAID_CHAPTERS,NUM81_CLASS,elem,rel,number81,sansai125,nameFromVerifiedStrokes,nameReading,birthReading,palmReading,fusion,premium11,timeProfile,freeBirthSummary,premiumHtml,build,safeText};
+window.SPEC195={VERSION,FEATURE_KEYS,PAID_CHAPTERS,NUM81_CLASS,elem,rel,number81,sansai125,nameFromVerifiedStrokes,nameReading,birthReading,palmReading,fusion,premium11,timeProfile,freeBirthSummary,freeNameSummary,freePalmSummary,freeFusionSummary,premiumHtml,build,safeText};
 })();

@@ -5,11 +5,12 @@ a{color:#ffe49a}.card{background:#fffdf7;color:#241532;border-radius:16px;paddin
 button{padding:12px 16px;border:0;border-radius:999px;background:#5d2598;color:#fff;font-weight:800}.order{padding:10px 0;border-bottom:1px solid #ddd}
 .dev{background:#2b1751;border:1px solid #d8b35a;padding:10px;border-radius:10px}</style></head><body><main class="wrap">
 <p><a href="/">← 鑑定トップへ</a></p><h1>マイページ</h1>
-<div class="dev">開発確認：SPEC195-BUILD-30｜会員状態・購入済み鑑定・Stripe会員管理</div>
+<div class="dev">開発確認：SPEC195-BUILD-33｜会員状態・購入済み鑑定・時間運・同意管理</div>
 <section class="card"><h2>月額会員 ¥490</h2><div id="membership">確認中…</div><button id="portal" hidden>会員管理・解約</button></section>
 <section class="card"><h2>購入済み詳細鑑定</h2><div id="orders">確認中…</div></section>
+<section class="card"><h2>データ・同意</h2><p><a href="/data-consent.html" style="color:#5d2598">手相画像のAI学習同意を確認・変更</a></p></section>
 <section class="card"><h2>時間運</h2><div id="time">月額会員になると、今日・今週・今月・今年の流れを確認できます。</div></section>
-</main><script>
+</main><script src="/time-profile-v1.js?v=SPEC195-BUILD-33"></script><script src="/spec195-client.js?v=SPEC195-BUILD-33"></script><script>
 const $=id=>document.getElementById(id);let csrf="";
 async function getCsrf(){const r=await fetch("/api/csrf-token",{credentials:"same-origin"});const j=await r.json();csrf=j.token||""}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -17,7 +18,7 @@ async function boot(){try{await getCsrf();const r=await fetch("/api/me",{credent
 const m=j.membership||{},active=["active","trialing"].includes(m.subscription_status);
 $("membership").innerHTML=`<p class="status">${active?"会員機能：利用中":"現在は未加入です"}</p>${m.current_period_end?`<p>現在の期間：${esc(new Date(m.current_period_end).toLocaleDateString("ja-JP"))}まで</p>`:""}${m.cancel_at_period_end?"<p>期間終了時に解約予定です。</p>":""}`;
 $("portal").hidden=!active;
-$("time").innerHTML=active?"<p><b>時間運を利用できます。</b></p><p>固定プロフィールに年・月・日の流れを重ねます。確定未来ではなく、過ごし方のヒントとして表示します。</p>":"月額会員になると、今日・今週・今月・今年の流れを確認できます。";
+if(active){const t=window.Spec195?.timeProfile?.()||null;$("time").innerHTML=t?`<p><b>${esc(t.today.theme)}</b>：${esc(t.today.text)}</p><p><b>${esc(t.week.theme)}</b>：${esc(t.week.text)}</p><p><b>${esc(t.month.theme)}</b>：${esc(t.month.text)}</p><p><b>${esc(t.year.theme)}</b>：${esc(t.year.text)}</p><p class="muted">${esc(t.disclaimer)}</p>`:"<p>時間運を利用できます。</p>"}else $("time").textContent="月額会員になると、今日・今週・今月・今年の流れを確認できます。";
 const os=j.orders||[];$("orders").innerHTML=os.length?os.map(o=>`<div class="order"><b>${esc(o.order_id)}</b> <span>${esc(o.status||"")}</span><br><a href="/premium-reading.html?order_id=${encodeURIComponent(o.order_id)}">詳細鑑定を開く</a></div>`).join(""):"<p>購入済みの詳細鑑定はありません。</p>";
 }catch(e){$("membership").textContent="マイページ情報を取得できませんでした。";$("orders").textContent="再読み込みしてください。"}}
 $("portal").addEventListener("click",async()=>{try{const r=await fetch("/api/my-customer-portal",{method:"POST",credentials:"same-origin",headers:{"x-csrf-token":csrf}});const j=await r.json();if(!r.ok)throw new Error(j.error);location.href=j.url}catch(e){alert("会員管理を開けませんでした。")}});boot();
