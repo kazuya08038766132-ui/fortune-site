@@ -1,26 +1,24 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>マイページ｜総合占い</title><script src="/spec195-client.js"></script><style>
-body{margin:0;background:linear-gradient(180deg,#080821,#150b37);color:#f4f0ff;font-family:system-ui;line-height:1.75}.w{max-width:900px;margin:auto;padding:28px 18px 80px}a{color:#f3d986}.hero,.box{background:#17113de8;border:1px solid #8e743b;border-radius:20px;padding:21px;margin:16px 0}.gold,h1,h2,h3{color:#f3d986}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#30225e}.small{color:#bbb}.btn{display:block;padding:13px;margin:10px 0;text-align:center;border-radius:12px;background:#7047d9;color:white;text-decoration:none;border:0;width:100%;box-sizing:border-box}@media(max-width:620px){.grid{grid-template-columns:1fr}}
-</style></head><body><main class="w"><a href="/">← 総合占い</a><section class="hero"><h1>👤 マイページ</h1><p id="state">会員状態を確認しています…</p></section>
-<section id="memberArea" style="display:none"><h2>月額会員の運勢</h2><div class="grid">
-<div class="box"><b>今日</b><h3 id="t0"></h3><p id="x0"></p></div><div class="box"><b>今週</b><h3 id="t1"></h3><p id="x1"></p></div>
-<div class="box"><b>今月</b><h3 id="t2"></h3><p id="x2"></p></div><div class="box"><b>今年</b><h3 id="t3"></h3><p id="x3"></p></div></div>
-<p class="small" id="td"></p><button class="btn" id="portal">会員契約・解約を管理する</button></section>
-<section class="box"><h2>購入済み詳細鑑定</h2><div id="orders">読み込み中…</div></section>
-<section class="box"><h2>データ・同意</h2><p>AI学習への同意は通常鑑定とは別管理です。</p><a class="btn" href="/data-consent.html">同意・データ管理を確認</a></section>
-<script>
-const qs=new URLSearchParams(location.search),dev=qs.get('dev')==='1'||localStorage.getItem('fortune_dev_membership')==='active';
-function showTime(){const p=Spec195.timeProfile();[p.today,p.week,p.month,p.year].forEach((v,i)=>{document.getElementById('t'+i).textContent=v.theme;document.getElementById('x'+i).textContent=v.text});td.textContent=p.disclaimer;memberArea.style.display='block'}
-async function load(){
- if(dev){state.innerHTML='<span class="pill">開発確認：月額会員 ACTIVE</span>';showTime();orders.innerHTML='<p class="small">開発プレビュー。実購入履歴は本番APIで確認します。</p>';return}
- try{
-  const r=await fetch('/api/me'),d=await r.json();if(!r.ok)throw Error('マイページを読み込めません');
-  const m=d.membership||{},active=['active','trialing'].includes(m.subscription_status);
-  state.innerHTML=active?'<span class="pill">月額会員 ACTIVE</span>':'<span class="pill">無料会員 / 未契約</span>';
-  if(active)showTime();
-  orders.innerHTML=(d.orders||[]).filter(o=>o.status==='PAID').length?(d.orders||[]).filter(o=>o.status==='PAID').map(o=>`<p><a href="/premium-reading.html?order_id=${encodeURIComponent(o.order_id)}">詳細鑑定 ${String(o.order_id).slice(0,12)}…</a></p>`).join(''):'<p>購入済みの詳細鑑定はありません。</p>';
- }catch(e){state.textContent=e.message;orders.textContent='購入履歴を取得できませんでした。'}
-}
-portal.onclick=async()=>{try{const r=await fetch('/api/my-customer-portal',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':await Spec195.csrfToken()},body:'{}'}),d=await r.json();if(!r.ok||!d.url)throw Error(d.error||'会員管理を開始できません');location.href=d.url}catch(e){alert(e.message)}};
-load();
-</script></main></body></html>
+<title>マイページ｜総合占い</title><style>
+body{margin:0;background:#100b25;color:#f8f3ff;font-family:system-ui,sans-serif}.wrap{max-width:760px;margin:auto;padding:20px}
+a{color:#ffe49a}.card{background:#fffdf7;color:#241532;border-radius:16px;padding:18px;margin:14px 0}.status{font-weight:900}.muted{opacity:.75}
+button{padding:12px 16px;border:0;border-radius:999px;background:#5d2598;color:#fff;font-weight:800}.order{padding:10px 0;border-bottom:1px solid #ddd}
+.dev{background:#2b1751;border:1px solid #d8b35a;padding:10px;border-radius:10px}</style></head><body><main class="wrap">
+<p><a href="/">← 鑑定トップへ</a></p><h1>マイページ</h1>
+<div class="dev">開発確認：SPEC195-BUILD-30｜会員状態・購入済み鑑定・Stripe会員管理</div>
+<section class="card"><h2>月額会員 ¥490</h2><div id="membership">確認中…</div><button id="portal" hidden>会員管理・解約</button></section>
+<section class="card"><h2>購入済み詳細鑑定</h2><div id="orders">確認中…</div></section>
+<section class="card"><h2>時間運</h2><div id="time">月額会員になると、今日・今週・今月・今年の流れを確認できます。</div></section>
+</main><script>
+const $=id=>document.getElementById(id);let csrf="";
+async function getCsrf(){const r=await fetch("/api/csrf-token",{credentials:"same-origin"});const j=await r.json();csrf=j.token||""}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function boot(){try{await getCsrf();const r=await fetch("/api/me",{credentials:"same-origin"});if(!r.ok)throw new Error("account");const j=await r.json();
+const m=j.membership||{},active=["active","trialing"].includes(m.subscription_status);
+$("membership").innerHTML=`<p class="status">${active?"会員機能：利用中":"現在は未加入です"}</p>${m.current_period_end?`<p>現在の期間：${esc(new Date(m.current_period_end).toLocaleDateString("ja-JP"))}まで</p>`:""}${m.cancel_at_period_end?"<p>期間終了時に解約予定です。</p>":""}`;
+$("portal").hidden=!active;
+$("time").innerHTML=active?"<p><b>時間運を利用できます。</b></p><p>固定プロフィールに年・月・日の流れを重ねます。確定未来ではなく、過ごし方のヒントとして表示します。</p>":"月額会員になると、今日・今週・今月・今年の流れを確認できます。";
+const os=j.orders||[];$("orders").innerHTML=os.length?os.map(o=>`<div class="order"><b>${esc(o.order_id)}</b> <span>${esc(o.status||"")}</span><br><a href="/premium-reading.html?order_id=${encodeURIComponent(o.order_id)}">詳細鑑定を開く</a></div>`).join(""):"<p>購入済みの詳細鑑定はありません。</p>";
+}catch(e){$("membership").textContent="マイページ情報を取得できませんでした。";$("orders").textContent="再読み込みしてください。"}}
+$("portal").addEventListener("click",async()=>{try{const r=await fetch("/api/my-customer-portal",{method:"POST",credentials:"same-origin",headers:{"x-csrf-token":csrf}});const j=await r.json();if(!r.ok)throw new Error(j.error);location.href=j.url}catch(e){alert("会員管理を開けませんでした。")}});boot();
+</script></body></html>

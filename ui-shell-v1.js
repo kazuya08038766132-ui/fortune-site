@@ -1,0 +1,6 @@
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const top=document.createElement('div');top.className='publicTopNav';top.innerHTML='<a class="brandMini" href="/">✦ 総合占い</a><a class="mypageTop" href="/mypage.html" aria-label="マイページ"><span class="personIcon" aria-hidden="true">👤</span><span>マイページ</span></a>';document.body.prepend(top);
+ const paid=document.getElementById('stripeCheckoutBtn'); if(paid){const c=document.createElement('label');c.className='consentLine';c.innerHTML='<input type="checkbox" id="detailConsent"> ¥980の1回払いと <a href="/terms.html">利用規約</a>・<a href="/legal.html">特商法表記</a>を確認しました';paid.before(c);paid.disabled=true;document.getElementById('detailConsent').addEventListener('change',e=>paid.disabled=!e.target.checked)}
+ document.getElementById('membershipCheckoutBtn')?.addEventListener('click',async()=>{if(!document.getElementById('membershipConsent').checked){alert('月額料金と利用条件をご確認ください。');return}try{const r=await fetch('/api/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();if(!r.ok)throw new Error(d.error||'会員登録を開始できません');location.href=d.url}catch(e){alert('会員登録を開始できませんでした：'+e.message)}});
+});

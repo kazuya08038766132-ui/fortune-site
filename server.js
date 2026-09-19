@@ -613,6 +613,28 @@ function requireCsrf(req,res,next){
   next();
 }
 
+
+// ===== SPEC195 account-owned consent management =====
+app.get("/api/my-consents", privateNoStore, async(req,res)=>{
+  try{
+    const sid=await touchAccount(req,res);
+    const q=await pool.query(`SELECT consent_type,accepted,policy_version,created_at
+      FROM consent_events WHERE subject_key=$1 ORDER BY created_at DESC LIMIT 50`,[sid]);
+    res.json({events:q.rows});
+  }catch(e){console.error(e);res.status(500).json({error:"consent_read_failed"})}
+});
+app.post("/api/my-consents", requireSameOrigin, requireCsrf, async(req,res)=>{
+  try{
+    const sid=await touchAccount(req,res);
+    const type=cleanConsentType(req.body?.consent_type),accepted=req.body?.accepted;
+    const policy=String(req.body?.policy_version||"").slice(0,80);
+    if(!type||typeof accepted!=="boolean"||!policy)return res.status(400).json({error:"invalid_consent_event"});
+    const q=await pool.query(`INSERT INTO consent_events(subject_key,consent_type,accepted,policy_version)
+      VALUES($1,$2,$3,$4) RETURNING id,created_at`,[sid,type,accepted,policy]);
+    res.status(201).json({ok:true,id:q.rows[0].id,created_at:q.rows[0].created_at});
+  }catch(e){console.error(e);res.status(500).json({error:"consent_store_failed"})}
+});
+
 // ===== SPEC195 product contract / purchase confirmation =====
 const SPEC195_PRODUCTS = Object.freeze({
   detail: {

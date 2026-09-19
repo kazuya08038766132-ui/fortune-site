@@ -1,33 +1,14 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>総合詳細鑑定｜総合占い</title><style>
-body{margin:0;background:linear-gradient(180deg,#080821,#150b37);color:#f4f0ff;font-family:system-ui;line-height:1.8}.w{max-width:900px;margin:auto;padding:30px 18px 80px}a{color:#f2d681}.hero,.ch{background:rgba(24,16,62,.9);border:1px solid #8d7439;border-radius:20px;padding:22px;margin:18px 0}.hero{text-align:center}.gold,h1,h2{color:#f2d681}.evidence{font-size:.82rem;color:#bcb4d1;border-top:1px solid #463b62;padding-top:10px}.low{padding:10px 12px;background:#261b42;border-left:3px solid #d3b95f;border-radius:8px}
-</style></head><body><main class="w"><a href="/">← 総合占い</a><section class="hero"><p class="gold">PREMIUM READING</p><h1>総合詳細鑑定</h1><p>姓名・生年月日・手相を独立して読み、最後に一致・相違・不足情報を統合します。</p></section><div id="reading"></div></main>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>詳細鑑定｜総合占い</title>
+<style>body{margin:0;background:#100b25;color:#fff;font-family:system-ui,sans-serif}.wrap{max-width:780px;margin:auto;padding:20px}.chapter{background:#fffdf7;color:#241532;border:1px solid #d8b35a;border-radius:16px;padding:18px;margin:14px 0}.technical{background:#f2e8ff;color:#321269;border-radius:10px;padding:12px}.notice{background:#2b1751;border:1px solid #d8b35a;padding:10px;border-radius:10px}a{color:#ffe49a}</style></head><body><main class="wrap">
+<p><a href="/mypage.html">← マイページ</a></p><div class="notice">開発確認：SPEC195-BUILD-32｜¥980詳細鑑定11章</div><h1>総合詳細鑑定</h1><div id="app">鑑定結果を確認しています…</div></main>
 <script>
-const chapters=["Ⅰ あなたという人","Ⅱ 運命バランス","Ⅲ 掌","Ⅳ 姓名","Ⅴ 生年月日","Ⅵ 仕事と才能","Ⅶ 財と金運","Ⅷ 愛情・人間関係","Ⅸ 人生の転機","Ⅹ 二つの手","最終章 三占術統合"];
-const generic=[
-"複数の情報を一つの性格ラベルに押し込まず、共通して現れる傾向と場面によって変わる傾向を分けて整理します。",
-"一致する特徴は補強材料として扱い、矛盾する特徴は消さずに『状況によって出方が変わる点』として残します。",
-"生命線・知能線・感情線を中心に、検出できた線だけを読みます。線の長短から寿命や病気を判断しません。",
-"姓名は対応済み文字のみを扱い、未対応の異体字・特殊文字の画数を推測しません。",
-"出生時刻を使用しない三柱ベースの開発鑑定です。年柱・月柱・日柱・日主・五行を中心に整理し、時柱は作りません。",
-"仕事では、判断の速さ、継続、対人調整、発想の使い方を中心に、向き不向きを断定せず活かし方を整理します。",
-"金運は将来の金額を予言せず、管理・判断・慎重さ・行動傾向として読みます。",
-"恋愛・人間関係は本人の反応傾向を扱い、相手の本心を事実として断定しません。",
-"転機は特定の出来事を予言せず、変化に対応しやすい時期の捉え方と意思決定の観点を整理します。",
-"利き手と反対の手の双方が解析できた場合に、共通点と差を比較します。片手しかない場合は比較を捏造しません。",
-"三占術のEvidenceを統合し、2系統以上で一致する点、矛盾する点、情報不足の点を明示して総合結果を作ります。"
-];
-const dev=new URLSearchParams(location.search).get('dev')==='1';
-if(!dev){
- const orderId=new URLSearchParams(location.search).get('order_id');
- if(!orderId){document.getElementById('reading').innerHTML='<section class="ch"><h2>購入確認が必要です</h2><p>マイページまたは購入完了画面から開いてください。</p></section>'}
- else fetch('/api/my-order-reading/'+encodeURIComponent(orderId)).then(async r=>({ok:r.ok,status:r.status,data:await r.json()})).then(x=>{
-   if(!x.ok)throw new Error(x.status===403?'支払い済み注文を確認できません。':'鑑定データを準備中です。');
-   const raw=x.data.reading||{},p=raw.payload||raw,chs=Array.isArray(p.chapters)?p.chapters:[];
-   document.getElementById('reading').innerHTML=chs.length?chs.map(ch=>`<section class="ch"><h2>${String(ch.title||'').replace(/[<>]/g,'')}</h2><p>${String(ch.text||'').replace(/[<>]/g,'')}</p><p class="evidence">${(ch.evidence||[]).map(String).join(' / ')}</p></section>`).join(''):'<section class="ch"><p>鑑定データを準備中です。</p></section>';
- }).catch(e=>document.getElementById('reading').innerHTML=`<section class="ch"><h2>鑑定を表示できません</h2><p>${String(e.message).replace(/[<>]/g,'')}</p></section>`);
-}
-else{
- document.getElementById('reading').innerHTML='<p class="low">開発プレビューです。未検証Masterの値を事実として表示しません。</p>'+chapters.map((x,i)=>`<section class="ch"><h2>${x}</h2><p>${generic[i]}</p><p class="evidence">Evidence policy: 独立ソースのみ / 低信頼は断定しない / 矛盾を平均化して消さない</p></section>`).join('');
-}
+const CH=["Ⅰ あなたという人","Ⅱ 運命バランス","Ⅲ 掌","Ⅳ 姓名","Ⅴ 生年月日","Ⅵ 仕事と才能","Ⅶ 財と金運","Ⅷ 愛情・人間関係","Ⅸ 人生の転機","Ⅹ 二つの手","最終章 三占術統合"];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function normalize(x){if(Array.isArray(x))return x;if(Array.isArray(x?.chapters))return x.chapters;if(Array.isArray(x?.premium))return x.premium;return[]}
+async function boot(){const id=new URLSearchParams(location.search).get("order_id");if(!id){document.getElementById("app").innerHTML="<p>鑑定IDがありません。</p>";return}
+try{const r=await fetch("/api/my-order-reading/"+encodeURIComponent(id),{credentials:"same-origin"});const j=await r.json();if(r.status===403){document.getElementById("app").innerHTML="<p>この鑑定を表示する権限を確認できません。</p>";return}if(!r.ok)throw new Error(j.error);
+const raw=j.reading||{},chs=normalize(raw);let html="";
+for(let i=0;i<11;i++){const c=chs[i]||{},title=c.title||CH[i],text=c.text||c.body||c.content||"この章は鑑定データ生成待ちです。";html+=`<section class="chapter"><h2>${esc(title)}</h2>${i===4&&c.technical?`<div class="technical"><b>命式データ</b><p>${esc(c.technical)}</p></div>`:""}<p>${esc(text)}</p></section>`}
+document.getElementById("app").innerHTML=html}catch(e){document.getElementById("app").innerHTML="<p>鑑定結果を取得できませんでした。しばらくして再読み込みしてください。</p>"}}
+boot();
 </script></body></html>
