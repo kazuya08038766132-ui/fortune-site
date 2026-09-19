@@ -2529,7 +2529,7 @@ body.devMode details:has(summary){display:block}
 </style></head>
 <body>
 <div id="devBuildBanner" style="position:sticky;top:0;z-index:2147483647;background:#fff0a8;color:#241600;border-bottom:3px solid #ff9f00;padding:10px 12px;text-align:center;font-weight:900;font-size:14px;box-shadow:0 3px 14px #0006">
-開発版：FREE-FLOW-02 ｜ 今回の修正：JavaScript起動エラー修正
+開発版：FREE-FLOW-03 ｜ 今回の修正：無料鑑定クリック処理を独立ファイル化
 </div>
 
 
@@ -2668,7 +2668,7 @@ body.devMode details:has(summary){display:block}
 <label>相談テーマ</label>
 <select id="theme"><option>総合</option><option>恋愛</option><option>仕事</option><option>金運</option><option>相性</option></select>
 <label>相談内容（任意）</label><textarea id="question" rows="4" placeholder="気になっていることを書いてください"></textarea>
-<button id="freeFortuneButton" onclick="this.textContent='鑑定処理を開始しました…';this.disabled=true;try{window.fortune()}catch(e){this.disabled=false;this.textContent='無料鑑定を試す';alert('鑑定処理の起動エラーが発生しました');console.error(e)}">無料鑑定を試す</button>
+<button type="button" id="freeFortuneButton">無料鑑定を試す</button>
 <p class="small">鑑定結果は娯楽・自己理解の参考情報です。医療・法律・投資など専門的判断の代替ではありません。</p>
 <p id="userStatus" class="modeBadge">生年月日と手の写真を入力して鑑定してください。</p>
 <div id="result"></div>
@@ -5092,7 +5092,7 @@ function spec195WithTimeout(promise,ms,label='palm-analysis'){
   return Promise.race([Promise.resolve(promise),timeout]).finally(()=>clearTimeout(timer));
 }
 
-window.fortune=async function(){
+window.fortuneEmbeddedDisabled=async function(){
  const btn=document.getElementById('freeFortuneButton');
  const r=document.getElementById('result');
  const b=document.getElementById('birth')?.value||'';
@@ -5124,14 +5124,14 @@ window.fortune=async function(){
       <h3>生年月日</h3><p>${birthText}</p>
       <h3>手相</h3><p>手相写真は正常に受付しました。主要線AIは現在検証中のため、線の位置・長さ・濃さを推測して断定しません。</p>
       ${q?`<h3>ご相談</h3><p>${safe(q)}</p>`:''}
-      <p class="small">開発確認用 FREE-FLOW-02。手相AIと三占術統合は検証完了後に再接続します。</p>
+      <p class="small">開発確認用 FREE-FLOW-03。手相AIと三占術統合は検証完了後に再接続します。</p>
    </section>`;
    const paid=document.getElementById('paidCta');
    if(paid)paid.style.display='block';
    if(typeof setUserStep==='function')setUserStep(3);
    if(btn){btn.disabled=false;btn.textContent='無料鑑定を試す'}
  }catch(e){
-   console.error('FREE_FLOW_02',e);
+   console.error('FREE_FLOW_03',e);
    r.innerHTML='<div class="captureError"><h3>無料鑑定の表示エラー</h3><p>写真は受付済みです。結果表示処理でエラーが発生しました。</p></div>';
    if(btn){btn.disabled=false;btn.textContent='無料鑑定を試す'}
  }
@@ -5160,6 +5160,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 
-<div id="releaseMarker" data-release="FREE-FLOW-02" style="display:none"></div>
+<script src="/free-flow-v3.js?v=FREE-FLOW-03" defer></script>
+<div id="releaseMarker" data-release="FREE-FLOW-03" style="display:none"></div>
 </body>
 </html>
