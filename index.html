@@ -2529,7 +2529,7 @@ body.devMode details:has(summary){display:block}
 </style></head>
 <body>
 <div id="devBuildBanner" style="position:sticky;top:0;z-index:2147483647;background:#fff0a8;color:#241600;border-bottom:3px solid #ff9f00;padding:10px 12px;text-align:center;font-weight:900;font-size:14px;box-shadow:0 3px 14px #0006">
-開発版：FREE-FLOW-03 ｜ 今回の修正：無料鑑定クリック処理を独立ファイル化
+開発版：FREE-FLOW-04 ｜ 今回の修正：開発者用Palm解析プレビューを安全分離
 </div>
 
 
@@ -2672,6 +2672,13 @@ body.devMode details:has(summary){display:block}
 <p class="small">鑑定結果は娯楽・自己理解の参考情報です。医療・法律・投資など専門的判断の代替ではありません。</p>
 <p id="userStatus" class="modeBadge">生年月日と手の写真を入力して鑑定してください。</p>
 <div id="result"></div>
+</div>
+<div class="card devOnly" id="palmDevPreviewPanel">
+<h2>Palm解析・開発プレビュー</h2>
+<p>利用者向け無料鑑定とは完全に分離した開発専用解析です。写真を選択後、必要なときだけ実行します。</p>
+<button type="button" id="runPalmDevPreview">開発解析プレビューを実行</button>
+<div id="palmDevStatus" class="notice">待機中：自動解析はしません。</div>
+<div id="palmDevFacts" class="notice"></div>
 </div>
 <div class="card devOnly" id="qaPanel"><h2>認識QA</h2><p>教師データの正解線と自動追跡線を比較して精度を数値化します。</p><button type="button" id="qaRun">現在の解析を評価</button><button type="button" id="qaRefine">誤差部分を自動再探索</button><button type="button" id="qaExport">QA結果JSON</button><div id="qaResult">まだ評価していません。</div></div>
 <div class="card userOnly" id="paidCta" style="display:none">
@@ -5161,6 +5168,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 <script src="/free-flow-v3.js?v=FREE-FLOW-03" defer></script>
-<div id="releaseMarker" data-release="FREE-FLOW-03" style="display:none"></div>
+<script src="/dev-palm-preview-v1.js?v=FREE-FLOW-04" defer></script>
+<div id="releaseMarker" data-release="FREE-FLOW-04" style="display:none"></div>
 </body>
 </html>
