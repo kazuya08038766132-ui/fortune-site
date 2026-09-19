@@ -1,0 +1,2 @@
+/* BUILD-37 palm gate patch: preserve BUILD-36 flow, improve reason-specific recapture copy. */
+(()=>{"use strict";window.PalmGateCopyV1={message(r){return ({NO_FILE:"手のひら写真を選んでください。",FILE_TOO_LARGE:"画像サイズが大きすぎます。別の写真を選んでください。",DECODE_FAILED:"画像ファイルを開けませんでした。別の写真を選んでください。",TOO_SMALL:"画像の解像度が低すぎます。もう少し大きな写真を選んでください。",EXTREME_DARKNESS:"写真が暗すぎます。手のひらが見える明るさで撮り直してください。",EXTREME_OVEREXPOSURE:"写真が白飛びしています。明るさを少し落として撮り直してください。"})[r]||"写真を確認できませんでした。別の写真を選んでください。"}}})();
