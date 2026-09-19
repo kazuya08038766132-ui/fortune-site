@@ -4803,7 +4803,7 @@ async function fortune(){
  if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
  r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
  try{
-  const num=birthCore(b),palm=await palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto');
+  const num=birthCore(b),palm=await spec195WithTimeout(palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto'),12000);
  lastPalmAnalysis=palm;teacherState.points=[];teacherState.active=false;updateTeacherStatus();
   if(palm?.qualityGate?.status!=='pass'){
     r.innerHTML='';
@@ -5049,6 +5049,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 // Override the public fortune flow: only truly unusable photos are rejected.
 // Borderline line confidence is handled per-line instead of rejecting the whole palm.
 const _fortuneOriginal=window.fortune;
+
+// SPEC195: palm analysis must never block the whole free reading.
+function spec195WithTimeout(promise,ms,label='palm-analysis'){
+  let timer;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(new Error(label+'_timeout')),ms);
+  });
+  return Promise.race([Promise.resolve(promise),timeout]).finally(()=>clearTimeout(timer));
+}
+
 window.fortune=async function(){
  const b=document.getElementById('birth')?.value, f=document.getElementById('palm')?.files?.[0],
  t=document.getElementById('theme')?.value, q=document.getElementById('question')?.value, r=document.getElementById('result');
@@ -5057,7 +5067,7 @@ window.fortune=async function(){
  r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
  try{
    const num=birthCore(b);
-   const palm=await palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto');
+   const palm=await spec195WithTimeout(palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto'),12000);
    lastPalmAnalysis=palm;
    const minSide=Math.min(palm?.image?.width||0,palm?.image?.height||0);
    const score=Number(palm?.qualityGate?.score||0);
@@ -5078,13 +5088,13 @@ window.fortune=async function(){
      life:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
      head:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
      heart:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
-     principalLines:{detected:false,reason:'engine-fallback'}
+     principalLines:{detected:false,reason:(String(e?.message||'').includes('timeout')?'engine-timeout':'engine-fallback')}
    };
    lastPalmAnalysis=fallbackPalm;
    try{r.innerHTML=integrate(num,fallbackPalm,t,q)}
    catch(renderError){
      console.error(renderError);
-     r.innerHTML='<div class="captureError"><h3>手相写真は受付できました</h3><p>主要線の自動判定は低信頼のため、今回は線の特徴を断定しません。生年月日・姓名の鑑定結果はそのまま表示できます。</p></div>';
+     r.innerHTML='<div class="captureError"><h3>手相写真は受付できました</h3><p>主要線の自動判定が低信頼、または解析時間を超えたため、今回は線の特徴を断定しません。生年月日・姓名の鑑定結果はそのまま表示します。</p></div>';
    }
  }
 };
