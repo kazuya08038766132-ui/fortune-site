@@ -2526,10 +2526,12 @@ main{
 body.userMode details:has(summary){display:none}
 body.devMode details:has(summary){display:block}
 .specPaidChapters{margin-top:16px;padding:14px;border:1px solid rgba(217,181,90,.45);border-radius:14px}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
-<script src="/spec195-client.js"></script></head>
+</style></head>
 <body>
+<div id="devBuildBanner" style="position:sticky;top:0;z-index:2147483647;background:#fff0a8;color:#241600;border-bottom:3px solid #ff9f00;padding:10px 12px;text-align:center;font-weight:900;font-size:14px;box-shadow:0 3px 14px #0006">
+開発版：FREE-FLOW-01 ｜ 今回の修正：無料鑑定処理を1本化
+</div>
+
 
 <header class="fortuneHeader">
   <div class="fortuneNav">
@@ -4797,7 +4799,7 @@ function publicSpecStatus(){
  return {spec:FORTUNE_MASTER_SPEC_195.version,masters:VERIFIED_MASTER_STATUS};
 }
 
-async function fortune(){
+async function fortuneLegacyDisabled(){
  const b=document.getElementById('birth').value,f=document.getElementById('palm').files[0],
  t=document.getElementById('theme').value,q=document.getElementById('question').value,r=document.getElementById('result');
  if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
@@ -5091,42 +5093,44 @@ function spec195WithTimeout(promise,ms,label='palm-analysis'){
 }
 
 window.fortune=async function(){
- const b=document.getElementById('birth')?.value, f=document.getElementById('palm')?.files?.[0],
- t=document.getElementById('theme')?.value, q=document.getElementById('question')?.value, r=document.getElementById('result');
+ const r=document.getElementById('result');
+ const b=document.getElementById('birth')?.value||'';
+ const f=document.getElementById('palm')?.files?.[0]||null;
+ const t=document.getElementById('theme')?.value||'総合';
+ const q=document.getElementById('question')?.value||'';
  if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
  if(!palmUseConsent){showPalmConsent(document.getElementById('palm'));return}
- r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
+ if(!r)return;
+ r.style.display='block';
+ r.innerHTML='<p><b>無料鑑定を作成しています…</b></p>';
  try{
+   await new Promise(resolve=>setTimeout(resolve,0));
    const num=birthCore(b);
-   const palm=await spec195WithTimeout(palmFeaturesPublicSafe(f,document.getElementById('handSide')?.value||'auto'),5000);
-   lastPalmAnalysis=palm;
-   const minSide=Math.min(palm?.image?.width||0,palm?.image?.height||0);
-   const score=Number(palm?.qualityGate?.score||0);
-   const reasons=palm?.qualityGate?.reasons||[];
-   const fatal=minSide<260 || reasons.some(x=>/手を検出できない|掌領域を正規化できない|画像から切れている/.test(x));
-   if(fatal && score<.22){r.innerHTML='';r.style.display='none';showRetryOverlay(palm);return}
-   // Accept usable real-world photos even if the line detector is uncertain.
-   palm.qualityGate.status='pass';
-   palm.qualityGate.message=score<.45?'写真は受付できました。弱い線は低信頼として慎重に読みます。':'解析可能です。';
-   r.innerHTML=integrate(num,palm,t,q);
- }catch(e){
-   console.error('palm analysis fallback',e);
-   const fallbackPalm={
-     confidence:0,quality:'limited',
-     qualityGate:{status:'pass',score:0,reasons:['解析エンジンの一部を利用できませんでした'],message:'写真は受付できました。主要線は低信頼として断定を避けて表示します。'},
-     source:f?.name||'uploaded-image',
-     image:{width:0,height:0,analysisWidth:0,analysisHeight:0,orientation:'unknown',hand:{requested:document.getElementById('handSide')?.value||'auto',resolved:'unknown'}},
-     life:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
-     head:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
-     heart:{score:0,confidence:0,lengthNorm:.5,curvature:.3,darkness:.3,continuity:.5,branchProxy:0,gapCount:0,branchPoints:[]},
-     principalLines:{detected:false,reason:(String(e?.message||'').includes('timeout')?'engine-timeout':'engine-fallback')}
-   };
-   lastPalmAnalysis=fallbackPalm;
-   try{r.innerHTML=integrate(num,fallbackPalm,t,q)}
-   catch(renderError){
-     console.error(renderError);
-     r.innerHTML='<div class="captureError"><h3>手相写真は受付できました</h3><p>主要線の自動判定が低信頼、または解析時間を超えたため、今回は線の特徴を断定しません。生年月日・姓名の鑑定結果はそのまま表示します。</p></div>';
+   const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   let birthText='';
+   if(num && typeof num==='object' && !num.error){
+     birthText=`年柱 ${safe(num.yearPillar||'確認中')}・月柱 ${safe(num.monthPillar||'確認中')}・日柱 ${safe(num.dayPillar||'確認中')}。日主 ${safe(num.dayMaster||'確認中')} ${safe(num.element||'')}`;
+   }else{
+     birthText='生年月日は受付しました。現在の生年月日エンジンは三柱ベースの開発版です。';
    }
+   const nameBlock=(typeof verifiedNameFortune==='function')?verifiedNameFortune():null;
+   const nameText=nameBlock?.status==='DATA_VERIFY'
+      ? '姓名判断は画数マスター未確認の文字を推測せず「要確認」とします。'
+      : '姓名判断データを確認しました。';
+   r.innerHTML=`<section class="safeFreeResult">
+      <h2>${safe(t)}・無料鑑定</h2>
+      <h3>姓名</h3><p>${safe(nameText)}</p>
+      <h3>生年月日</h3><p>${birthText}</p>
+      <h3>手相</h3><p>手相写真は正常に受付しました。主要線AIは現在検証中のため、線の位置・長さ・濃さを推測して断定しません。</p>
+      ${q?`<h3>ご相談</h3><p>${safe(q)}</p>`:''}
+      <p class="small">開発確認用 FREE-FLOW-01。手相AIと三占術統合は検証完了後に再接続します。</p>
+   </section>`;
+   const paid=document.getElementById('paidCta');
+   if(paid)paid.style.display='block';
+   if(typeof setUserStep==='function')setUserStep(3);
+ }catch(e){
+   console.error('FREE_FLOW_01',e);
+   r.innerHTML='<div class="captureError"><h3>無料鑑定の表示エラー</h3><p>写真は受付済みです。結果表示処理でエラーが発生しました。</p></div>';
  }
 };
 </script>
@@ -5152,6 +5156,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 
-<div id="releaseMarker" data-release="PALM_PUBLIC_SAFE_V3" style="display:none"></div>
+
+<div id="releaseMarker" data-release="FREE-FLOW-01" style="display:none"></div>
 </body>
 </html>
