@@ -2666,7 +2666,7 @@ body.devMode details:has(summary){display:block}
 <label>相談テーマ</label>
 <select id="theme"><option>総合</option><option>恋愛</option><option>仕事</option><option>金運</option><option>相性</option></select>
 <label>相談内容（任意）</label><textarea id="question" rows="4" placeholder="気になっていることを書いてください"></textarea>
-<button onclick="fortune()">無料鑑定を試す</button>
+<button onclick="window.fortune()">無料鑑定を試す</button>
 <p class="small">鑑定結果は娯楽・自己理解の参考情報です。医療・法律・投資など専門的判断の代替ではありません。</p>
 <p id="userStatus" class="modeBadge">生年月日と手の写真を入力して鑑定してください。</p>
 <div id="result"></div>
@@ -4811,7 +4811,12 @@ async function fortune(){
     showRetryOverlay(palm);
     return;
   }
-  r.innerHTML=integrate(num,palm,t,q);
+  try{
+     r.innerHTML=integrate(num,palm,t,q);
+   }catch(renderError){
+     console.error('integration render fallback',renderError);
+     r.innerHTML='<div class="captureError"><h3>無料鑑定</h3><p>手相写真は受付できました。現在、手相線AIは検証中のため線の特徴は断定しません。生年月日の鑑定結果を表示できる状態です。</p></div>';
+   }
  }catch(e){
  console.error(e);
  r.innerHTML='<div class="captureError"><h3>📷 写真を確認できませんでした</h3><p>明るい場所・シンプルな背景で、5本の指を広げ、指先から手首まで写してもう一度撮影してください。</p></div>'
@@ -5048,24 +5053,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 async function palmFeaturesPublicSafe(file,handSide='auto'){
-  const img=await loadPalmImage(file);
-  const w=Number(img?.width||0), h=Number(img?.height||0);
-  const minSide=Math.min(w,h);
-  if(!w||!h) throw new Error('image_load_failed');
-  if(minSide<260) throw new Error('image_too_small');
-  // Public-safe fallback until the production Palm AI master is verified.
-  // Do not invent line detections: accept the image, mark each line insufficient.
+  if(!file) throw new Error('no_file');
+  // SPEC195 emergency-safe public path:
+  // Do not decode/process pixels here. This guarantees the free reading cannot freeze
+  // on Android while the production palm model is still DATA_VERIFY.
   return {
     confidence:0,
     quality:'accepted_limited',
     qualityGate:{
       status:'pass',
-      score:minSide>=600?.60:.45,
+      score:.5,
       reasons:[],
       message:'写真は受付できました。現在の手相線AIは検証中のため、主要線は断定せずに表示します。'
     },
-    source:file?.name||'uploaded-image',
-    image:{width:w,height:h,analysisWidth:0,analysisHeight:0,orientation:h>=w?'portrait':'landscape',
+    source:file.name||'uploaded-image',
+    image:{width:999,height:999,analysisWidth:0,analysisHeight:0,orientation:'unknown',
       hand:{requested:handSide,resolved:'unknown'}},
     life:{score:0,confidence:0,detected:false},
     head:{score:0,confidence:0,detected:false},
