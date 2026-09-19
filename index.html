@@ -4803,7 +4803,7 @@ async function fortune(){
  if(!b||!f){alert('生年月日と手のひら写真を入力してください');return}
  r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
  try{
-  const num=birthCore(b),palm=await spec195WithTimeout(palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto'),12000);
+  const num=birthCore(b),palm=await spec195WithTimeout(palmFeaturesPublicSafe(f,document.getElementById('handSide')?.value||'auto'),1000);
  lastPalmAnalysis=palm;teacherState.points=[];teacherState.active=false;updateTeacherStatus();
   if(palm?.qualityGate?.status!=='pass'){
     r.innerHTML='';
@@ -5152,5 +5152,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 
+<div id="releaseMarker" data-release="PALM_PUBLIC_SAFE_V3" style="display:none"></div>
 </body>
 </html>
