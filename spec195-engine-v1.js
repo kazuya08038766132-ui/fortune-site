@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const VERSION="SPEC195_ENGINE_V1";
+const VERSION="SPEC195_ENGINE_V1_BUILD34";
 const FEATURE_KEYS=["independence","persistence","creativity","logic","intuition","emotional_expression","social_support","adaptability","stability","ambition","caution","leadership"];
 const NAME_ROLES={ten:"FAMILY",jin:"CORE",chi:"EARLY",gai:"SOCIAL",sou:"LIFE",sansai:"FLOW"};
 const ELEMENT_BY_DIGIT={1:"木",2:"木",3:"火",4:"火",5:"土",6:"土",7:"金",8:"金",9:"水",0:"水"};
@@ -25,12 +25,15 @@ function nameReading(fullName){
     message:"新字体標準の正式Masterで未検証の文字は画数を推測しません。現在は画数確認が必要です。",features:[]};
 }
 function birthReading(date){
-  let raw=null;
-  try{if(typeof window.birthCore==="function")raw=window.birthCore(date)}catch(e){}
-  if(raw&&typeof raw==="object"&&!raw.error){
-    return {status:"OK_PROTO",version:"BIRTH_3PILLAR_PROTO_V1",yearPillar:raw.yearPillar||null,monthPillar:raw.monthPillar||null,dayPillar:raw.dayPillar||null,dayMaster:raw.dayMaster||null,element:raw.element||null,raw};
+  const iso=String(date||"");
+  const day=window.BirthDayPillar?.dayPillar?.(iso)||null;
+  const year=window.BirthYearPillar?.yearPillar?.(iso,window.BirthBoundaryPolicy)||null;
+  const stemElement={甲:"木",乙:"木",丙:"火",丁:"火",戊:"土",己:"土",庚:"金",辛:"金",壬:"水",癸:"水"};
+  if(day?.status==="OK_DATE_ONLY"){
+    const element=stemElement[day.stem]||null;
+    return {status:"OK_DATE_ONLY",version:"BIRTH_DATE_ONLY_V2",year,month:null,day,yearPillar:year?.pillar||null,monthPillar:null,dayPillar:day.pillar,dayMaster:day.stem,element,note:"出生時刻は使わず、生年月日だけで確定できる範囲を読みます。節入り境界の月柱は未確認なら断定しません。"};
   }
-  return {status:"PROTO_LIMITED",version:"BIRTH_3PILLAR_PROTO_V1",message:"生年月日は受付済みです。節入り等の完全Master検証前の三柱開発版です。時柱は生成しません。"};
+  return {status:"DATA_VERIFY",version:"BIRTH_DATE_ONLY_V2",message:"生年月日の計算を確認できませんでした。"};
 }
 function palmReading(){
   const p=window.lastPalmAnalysis, q=window.lastPalmPublicQuality;
@@ -39,13 +42,13 @@ function palmReading(){
   return {status:"DEV_ANALYSIS",version:"PALM_MODEL_INTERFACE_V1",quality:p.qualityGate||null,life:line(p.life),head:line(p.head),heart:line(p.heart),fate:line(p.fate),message:"開発解析値です。低信頼・未検出を特徴不在と断定しません。"};
 }
 function fusion(name,birth,palm){
-  const sources=[name,birth,palm], usable=sources.filter(x=>x&&["OK","OK_PROTO","DEV_ANALYSIS"].includes(x.status)).length;
+  const sources=[name,birth,palm], usable=sources.filter(x=>x&&["OK","OK_PROTO","OK_DATE_ONLY","OK_VERIFIED_NEW_FORM","DEV_ANALYSIS","IMAGE_ACCEPTED"].includes(x.status)).length;
   const status=usable>=3?"STRONG":usable===2?"PARTIAL":usable===1?"MIXED":"INSUFFICIENT";
   return {status,version:"FUSION_RULE_MATRIX_V1",agreement_count:usable,conflicts:[],evidence_ids:sources.map((x,i)=>x?`${i+1}:${x.version}:${x.status}`:null).filter(Boolean),message:status==="STRONG"?"3系統の根拠を統合できます。":status==="PARTIAL"?"確認済みの2系統を中心に読みます。":status==="MIXED"?"確認済み情報が限定的なため断定を避けます。":"検証済み根拠が不足しています。"};
 }
 function premium11(ctx){
   const n=ctx.name,b=ctx.birth,p=ctx.palm,f=ctx.fusion;
-  const technical=b.status==="OK_PROTO"
+  const technical=["OK_PROTO","OK_DATE_ONLY"].includes(b.status)
     ? `年柱：${safeText(b.yearPillar||"確認中")}／月柱：${safeText(b.monthPillar||"確認中")}／日柱：${safeText(b.dayPillar||"確認中")}／日主：${safeText(b.dayMaster||"確認中")}${b.element?`（${safeText(b.element)}）`:""}`
     : "生年月日の専門データは検証中です。";
   const dual=ctx.oppositePalm
@@ -55,7 +58,7 @@ function premium11(ctx){
    `姓名・生年月日・手相を最初から混ぜず、3つの視点を独立して確認してから統合します。現在の統合状態は ${f.status} です。`,
    `一致している傾向だけでなく、まだ確認できない部分や矛盾も分けて扱います。`,
    p.status==="DEV_ANALYSIS"?"生命線・頭脳線・感情線を中心に開発解析値を確認します。低信頼の線は断定しません。":"手相写真は受付済みです。主要線AIの本番検証が終わるまでは線の特徴を推測しません。",
-   n.status==="DATA_VERIFY"?"姓名は正式な画数Masterで確認できない文字を推測せず、確認待ちとして扱います。":"姓名の五格・81数理・三才の確認済み結果を解説します。",
+   n.status==="DATA_VERIFY"?"姓名は正式な画数Masterで確認できない文字を推測せず、確認待ちとして扱います。":(()=>{const g=n.formal?.grids||{},nu=n.formal?.numerology||{},sa=n.formal?.sansai||{};return `新字体基準で、天格${g.ten}画・人格${g.jin}画・地格${g.chi}画・外格${g.gai}画・総格${g.sou}画。81数理は人格「${nu.jin?.fortune||"確認中"}」、総格「${nu.sou?.fortune||"確認中"}」。三才は${(sa.elements||[]).join("・")}で、天→人=${sa.tenToJin||"確認中"}、人→地=${sa.jinToChi||"確認中"}として、人格を中心に構造を読みます。流派差があるため吉凶だけで断定しません。`;})(),
    `${technical}。詳細鑑定ではこの専門データを見せたうえで、専門用語だけで終わらず、性格・強み・注意点を読みやすい言葉で解説します。出生時刻の入力は求めません。`,
    `仕事と才能は、3占術から確認できた持続性・論理性・創造性・適応性などを根拠ごとに整理します。`,
    `財と金運は将来の利益額を予言せず、お金との向き合い方・慎重さ・継続性などの傾向として読みます。`,
@@ -68,19 +71,21 @@ function premium11(ctx){
 }
 function freeBirthSummary(b){
  if(!b)return"生年月日を確認中です。";
- if(b.status!=="OK_PROTO")return"生年月日から、性格や得意なこと、仕事・恋愛・金運の傾向を読み解きます。";
- const e=b.element||"";
- const map={"木":"成長や柔軟さ","火":"行動力や表現力","土":"安定感や現実性","金":"判断力や筋の通し方","水":"柔軟な思考や感受性"};
- return `生年月日から見ると、${map[e]||"自分らしい判断軸"}を意識しやすい傾向があります。詳しい干支・日主などの専門データは詳細鑑定で解説します。`;
+ if(!["OK_PROTO","OK_DATE_ONLY"].includes(b.status))return"生年月日から確認できる範囲を読み解きます。";
+ const e=b.element||"", dm=b.dayMaster||"";
+ const map={"木":"成長する力と柔軟さを大切にしやすいタイプ。新しいことを吸収しながら、自分の形に育てていくほど持ち味が出やすい傾向です。","火":"行動力と表現力を活かしやすいタイプ。気持ちが決まると前へ進む力が出やすく、周囲へ熱意を伝えることが得意になりやすい傾向です。","土":"安定感と現実性を大切にしやすいタイプ。急いで結論を出すより、足元を整えて積み重ねることで力を発揮しやすい傾向です。","金":"判断基準を持ち、物事を整理して選び取る力を活かしやすいタイプ。納得できる筋道を大切にする傾向があります。","水":"状況を観察しながら柔軟に考える力を活かしやすいタイプ。相手や場面に応じて発想を切り替えることが得意になりやすい傾向です。"};
+ return `${map[e]||"自分なりの判断軸を作ることを大切にしやすい傾向です。"}${dm?` 詳細鑑定では日主「${safeText(dm)}」を含む命式データを示し、仕事・恋愛・金運まで分けて読みます。`:""}`;
 }
-
 function freeNameSummary(n,fullName){
- const display=String(fullName||n?.name||"").replace(/\s+/g," ").trim();
+ const display=String(fullName||n?.name||"").replace(/\\s+/g," ").trim();
  if(n?.status==="OK_VERIFIED_NEW_FORM"&&n.formal){
-  const g=n.formal.grids||{}, core=n.formal.numerology?.jin?.fortune||"";
-  return `${safeText(display)}というお名前を新字体の確認済み画数で見ると、人格${g.jin}画・地格${g.chi}画・総格${g.sou}画です。${core?`人格は「${core}」の分類。`:""}無料鑑定では全体像を簡潔に、詳細鑑定では五格・81数理・三才を分けて読みます。`;
+  const g=n.formal.grids||{}, nu=n.formal.numerology||{}, sa=n.formal.sansai||{};
+  const f=x=>nu[x]?.fortune||"確認中";
+  const relation={"SAME":"同じ性質が重なる","GENERATES":"前の要素が次を生かす","GENERATED_BY":"次の要素から支えを受ける","CONTROLS":"前の要素が次を抑える","CONTROLLED_BY":"次の要素から抑えを受ける"};
+  return `${safeText(display)}を新字体の確認済み画数で見ると、天格${g.ten}画（${f("ten")}）・人格${g.jin}画（${f("jin")}）・地格${g.chi}画（${f("chi")}）・外格${g.gai}画（${f("gai")}）・総格${g.sou}画（${f("sou")}）です。中心となる人格と、人生全体を見る総格を軸に読みます。三才は${(sa.elements||[]).join("・")}で、天→人は「${relation[sa.tenToJin]||sa.tenToJin}」、人→地は「${relation[sa.jinToChi]||sa.jinToChi}」という構造です。吉凶だけで人を決めつけず、複数の格の重なりとして扱います。`;
  }
- return `${safeText(display)}というお名前を受け取りました。無料鑑定では名前全体の印象を中心に扱い、未確認の漢字画数を勝手に補いません。画数を正式に確認できた文字は、詳細鑑定で五格・81数理・三才へ段階的に反映します。`;
+ const u=n?.unknown?.length?`（未確認：${n.unknown.map(safeText).join("・")}）`:"";
+ return `${safeText(display)}というお名前を受け取りました。${u} 未確認の漢字画数は勝手に補わず、確認済みになった文字だけ五格・81数理・三才へ反映します。`;
 }
 function freePalmSummary(p,dominant="right"){
  const hand=dominant==="left"?"左手":"右手";

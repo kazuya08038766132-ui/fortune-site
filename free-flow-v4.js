@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const BUILD="SPEC195-BUILD-33",$=id=>document.getElementById(id);
+const BUILD="SPEC195-BUILD-35",$=id=>document.getElementById(id);
 const esc=v=>window.SPEC195?.safeText(v)??String(v??"");
 function show(html){const r=$("result");if(!r)return;r.style.display="block";r.innerHTML=html;r.scrollIntoView({behavior:"smooth",block:"start"})}
 function setBtn(t,d=false){const b=$("freeFortuneButton");if(b){b.textContent=t;b.disabled=d}}
@@ -25,7 +25,7 @@ async function run(){
  const publicFusion=window.SPEC195.freeFusionSummary(x,theme);
  show(`<section class="safeFreeResult"><h2>${esc(theme)}・無料鑑定</h2>
  <p><b>${esc(family)} ${esc(given)}さん</b>の3つの視点を、確認できた情報から順に読み解きます。</p>
- <h3>姓名から見るあなた</h3><p>${publicName}</p>
+ <h3>姓名から見るあなた</h3><p>${publicName}</p>${window.NameFortuneVisualV1?.render?.(x.name,fullName)||""}
  <h3>生年月日から見るあなた</h3><p>${bp}</p>
  <h3>手相から見る現在の傾向</h3><p>${publicPalm}</p>
  <h3>総合メッセージ</h3><p>${publicFusion}</p>
