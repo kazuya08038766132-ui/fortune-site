@@ -5046,6 +5046,35 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.querySelector('.publicTopNav')?.after(n);
 });
 
+
+async function palmFeaturesPublicSafe(file,handSide='auto'){
+  const img=await loadPalmImage(file);
+  const w=Number(img?.width||0), h=Number(img?.height||0);
+  const minSide=Math.min(w,h);
+  if(!w||!h) throw new Error('image_load_failed');
+  if(minSide<260) throw new Error('image_too_small');
+  // Public-safe fallback until the production Palm AI master is verified.
+  // Do not invent line detections: accept the image, mark each line insufficient.
+  return {
+    confidence:0,
+    quality:'accepted_limited',
+    qualityGate:{
+      status:'pass',
+      score:minSide>=600?.60:.45,
+      reasons:[],
+      message:'写真は受付できました。現在の手相線AIは検証中のため、主要線は断定せずに表示します。'
+    },
+    source:file?.name||'uploaded-image',
+    image:{width:w,height:h,analysisWidth:0,analysisHeight:0,orientation:h>=w?'portrait':'landscape',
+      hand:{requested:handSide,resolved:'unknown'}},
+    life:{score:0,confidence:0,detected:false},
+    head:{score:0,confidence:0,detected:false},
+    heart:{score:0,confidence:0,detected:false},
+    fate:{score:0,confidence:0,detected:false},
+    principalLines:{detected:false,reason:'PALM_AI_DATA_VERIFY'}
+  };
+}
+
 // Override the public fortune flow: only truly unusable photos are rejected.
 // Borderline line confidence is handled per-line instead of rejecting the whole palm.
 const _fortuneOriginal=window.fortune;
@@ -5067,7 +5096,7 @@ window.fortune=async function(){
  r.style.display='block';r.innerHTML='<p>手相画像を解析しています…</p>';
  try{
    const num=birthCore(b);
-   const palm=await spec195WithTimeout(palmFeatures(f,document.getElementById('handSide')?.value||'auto',document.getElementById('calibrationMode')?.value||'auto'),12000);
+   const palm=await spec195WithTimeout(palmFeaturesPublicSafe(f,document.getElementById('handSide')?.value||'auto'),5000);
    lastPalmAnalysis=palm;
    const minSide=Math.min(palm?.image?.width||0,palm?.image?.height||0);
    const score=Number(palm?.qualityGate?.score||0);
