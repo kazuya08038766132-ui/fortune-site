@@ -219,10 +219,11 @@ app.get("/api/spec", (_req,res) => res.json({
   serverFixedPricing:true
 }));
 
-app.post("/api/create-checkout-session", async (req, res) => {
+app.post("/api/create-checkout-session", requireSameOrigin, requireCsrf, async (req, res) => {
   if (!stripe) return res.status(503).json({ error: "Stripe is not configured yet." });
   if (!process.env.DATABASE_URL) return res.status(503).json({ error: "Database is not configured." });
 
+  const sid = await touchAccount(req,res);
   const orderId = `FT-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
   const reading = req.body?.reading || {};
 
@@ -230,6 +231,8 @@ app.post("/api/create-checkout-session", async (req, res) => {
     `INSERT INTO orders(id,status,amount,currency,payment_status,premium_status,reading) VALUES($1,'pending',$2,'jpy','pending','locked',$3)`,
     [orderId, priceYen, reading]
   );
+
+  await pool.query(`INSERT INTO account_orders(session_key,order_id) VALUES($1,$2) ON CONFLICT DO NOTHING`,[sid,orderId]);
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -252,6 +255,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
 
 app.post("/api/create-subscription-session", async (req, res) => {
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"use_create_subscription_checkout"});
   if (!stripe) return res.status(503).json({ error: "Stripe is not configured yet." });
   if (!process.env.DATABASE_URL) return res.status(503).json({ error: "Database is not configured." });
 
@@ -294,6 +298,7 @@ app.post("/api/create-customer-portal",requireSameOrigin,requireCsrf,async(req,r
 });
 
 app.get("/api/membership/:id", async (req,res) => {
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"use_membership_status"});
   if (!process.env.DATABASE_URL) return res.status(503).json({ error:"Database is not configured." });
   const {rows}=await pool.query(`SELECT id,status,current_period_end,cancel_at_period_end,created_at FROM memberships WHERE id=$1`,[req.params.id]);
   if(!rows[0]) return res.sendStatus(404);
@@ -301,6 +306,7 @@ app.get("/api/membership/:id", async (req,res) => {
 });
 
 app.get("/api/order/:id", async (req, res) => {
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"use_account_owned_reading"});
   if (!process.env.DATABASE_URL) return res.status(503).json({ error: "Database is not configured." });
   const { rows } = await pool.query(
     `SELECT id,status,amount,currency,payment_status,premium_status,reading,premium_reading,paid_at,created_at FROM orders WHERE id=$1`,
@@ -316,6 +322,7 @@ app.get("/api/order/:id", async (req, res) => {
 
 // Stores a generated premium reading only for an already-paid order.
 app.post("/api/order/:id/premium-reading", async (req, res) => {
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"use_account_owned_premium_write"});
   if (!process.env.DATABASE_URL) return res.status(503).json({ error: "Database is not configured." });
   const premiumReading = req.body?.premiumReading;
   if (!premiumReading) return res.status(400).json({ error: "premiumReading is required." });
@@ -333,11 +340,6 @@ app.post("/api/order/:id/premium-reading", async (req, res) => {
   );
   res.json(updated.rows[0]);
 });
-
-initDb()
-  .then(() => app.listen(port, "0.0.0.0", () => console.log(`fortune-site listening on ${port}`)))
-  .catch(err => { console.error(err); process.exit(1); });
-
 
 
 // ===== SPEC195 persistence / consent / reading artifacts =====
@@ -372,8 +374,6 @@ async function ensureSpec195Tables(){
     CREATE INDEX IF NOT EXISTS palm_assets_delete_idx ON palm_assets(delete_after);
   `);
 }
-ensureSpec195Tables().catch(e=>console.error("SPEC195 migration failed",e));
-
 function cleanSubjectKey(v){
   const x=String(v||"").trim();
   return /^[A-Za-z0-9:_-]{8,128}$/.test(x)?x:null;
@@ -399,6 +399,7 @@ app.post("/api/consent-events", requireSameOrigin,requireCsrf, async (req,res)=>
 });
 
 app.get("/api/consent-events/:subject", async (req,res)=>{
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"consent_read_private"});
   try{
     const subject=cleanSubjectKey(req.params.subject);
     if(!subject)return res.status(400).json({error:"invalid_subject"});
@@ -424,12 +425,15 @@ app.get("/api/paid-reading/:orderId", async (req,res)=>{
   }catch(e){console.error(e);res.status(500).json({error:"paid_reading_failed"})}
 });
 
-app.post("/api/reading-artifacts", async (req,res)=>{
+app.post("/api/reading-artifacts", requireSameOrigin, requireCsrf, async (req,res)=>{
   try{
+    const sid=await touchAccount(req,res);
     const orderId=String(req.body?.order_id||"").slice(0,120);
     const schema=String(req.body?.schema_version||"").slice(0,80);
     const payload=req.body?.payload;
     if(!orderId||!schema||!payload||typeof payload!=="object")return res.status(400).json({error:"invalid_artifact"});
+    const own=await pool.query(`SELECT 1 FROM account_orders WHERE session_key=$1 AND order_id=$2`,[sid,orderId]);
+    if(!own.rowCount)return res.status(403).json({error:"not_owned"});
     const oq=await pool.query(`SELECT status FROM orders WHERE id::text=$1 LIMIT 1`,[orderId]);
     if(!oq.rowCount || String(oq.rows[0].status||"").toLowerCase()!=="paid")return res.status(403).json({error:"payment_required"});
     const q=await pool.query(
@@ -441,7 +445,7 @@ app.post("/api/reading-artifacts", async (req,res)=>{
 });
 
 // Storage registry only: actual private-object upload/delete adapter is still required.
-app.post("/api/palm-assets/register", async (req,res)=>{
+app.post("/api/palm-assets/register", requireSameOrigin, requireCsrf, async (req,res)=>{
   try{
     const subject=cleanSubjectKey(req.body?.subject_key);
     const storageKey=String(req.body?.storage_key||"").trim().slice(0,300);
@@ -522,8 +526,6 @@ async function ensureAccountTables(){
     );
   `);
 }
-ensureAccountTables().catch(e=>console.error("account migration failed",e));
-
 async function touchAccount(req,res){
   const sid=ensureVisitorSession(req,res);
   await pool.query(`INSERT INTO visitor_accounts(session_key) VALUES($1)
@@ -542,6 +544,7 @@ app.get("/api/me",async(req,res)=>{
   }catch(e){console.error(e);res.status(500).json({error:"account_read_failed"})}
 });
 app.post("/api/account-orders/claim",requireSameOrigin,requireCsrf,async(req,res)=>{
+  if(process.env.NODE_ENV==="production") return res.status(404).json({error:"claim_disabled"});
   try{
     const sid=await touchAccount(req,res);
     const orderId=String(req.body?.order_id||"").slice(0,120);
@@ -691,7 +694,7 @@ app.get("/api/readiness",async(_req,res)=>{
 
 
 // ===== SPEC195 live-route compatibility =====
-app.post("/api/create-subscription-checkout", requireSameOrigin, async (req,res)=>{
+app.post("/api/create-subscription-checkout", requireSameOrigin, requireCsrf, async (req,res)=>{
   // Compatibility endpoint for the SPEC195 purchase-confirm UI.
   // Uses the same server-fixed ¥490 Stripe construction as the live subscription route.
   if (!stripe) return res.status(503).json({ error:"Stripe is not configured yet." });
@@ -742,4 +745,19 @@ app.post("/api/my-customer-portal",requireSameOrigin,requireCsrf,async(req,res)=
     });
     res.json({url:portal.url,status:m.subscription_status});
   }catch(e){console.error(e);res.status(500).json({error:"portal_failed"})}
+});
+
+
+// ===== SPEC195 deterministic startup =====
+async function startServer(){
+  await initDb();
+  if(process.env.DATABASE_URL){
+    await ensureSpec195Tables();
+    await ensureAccountTables();
+  }
+  app.listen(port,"0.0.0.0",()=>console.log(`fortune-site listening on ${port}`));
+}
+startServer().catch(err=>{
+  console.error("fortune-site startup failed",err);
+  process.exit(1);
 });
