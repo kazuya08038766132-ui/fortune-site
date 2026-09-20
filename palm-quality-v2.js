@@ -23,5 +23,5 @@ async function quality(file){
  // Do not reject for low global contrast: a palm can be pale on a pale background.
  return {status:"ACCEPT",reason:"QUALITY_OK",width:w,height:h,mean:Math.round(mean),contrast:Math.round(sd),note:"軽い影・傾き・背景・肌色・低めの全体コントラストだけでは拒否しません。"};
 }
-window.PalmPublicQuality={version:"PALM_QUALITY_GATE_V3_BUILD37",quality};
+window.PalmPublicQuality={version:"PALM_QUALITY_GATE_V3_BUILD39",quality};
 })();

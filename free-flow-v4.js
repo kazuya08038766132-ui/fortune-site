@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const BUILD="SPEC195-BUILD-38",$=id=>document.getElementById(id),esc=v=>window.SPEC195?.safeText(v)??String(v??"");
+const BUILD="SPEC195-BUILD-39",$=id=>document.getElementById(id),esc=v=>window.SPEC195?.safeText(v)??String(v??"");
 const BP={木:["成長力と柔軟さ","学びながら改善する力","育成・企画・改善","関係を急がず育てる","継続的に積み上げる","変化を受け止め希望も伝える","優先順位を決める"],火:["行動力と表現力","熱意を伝える力","発信・推進","気持ちを言葉にし急がない","勢いの出費を整える","率直さと余白を両立する","熱い時ほど一度置く"],土:["安定感と現実性","継続して形にする力","管理・調整・運用","信頼を時間をかけ築く","予算と貯蓄を整える","抱え込みすぎない","小さく試す"],金:["判断力と整理力","基準を作り質を高める力","品質・分析・技術","約束を重視し感情も言葉にする","数字で管理する","筋を通し曖昧さも許す","厳しくしすぎない"],水:["観察力と柔軟性","状況を読み切り替える力","情報収集・調整・研究","本音を後回しにしない","目的別に配分する","事実と想像を分ける","判断基準を決める"]};
 function birthDetail(b){if(b?.status!=="OK_DATE_ONLY")return"";const x=BP[b.element]||BP.土,r=[["本質・性格",x[0]],["才能・強み",x[1]],["仕事",x[2]],["恋愛",x[3]],["金運",x[4]],["人間関係",x[5]],["注意点",x[6]]];return `<section class="birthFortuneDetail"><h4>生年月日から見る7つの傾向</h4><div class="birthMiniGrid"><div><b>日主</b><strong>${esc(b.dayMaster||"確認中")}</strong></div><div><b>中心の五行</b><strong>${esc(b.element||"確認中")}</strong></div></div>${r.map(a=>`<article class="birthRow"><h4>${a[0]}</h4><p>${a[1]}を活かしやすい傾向です。</p></article>`).join("")}<p class="small">出生時刻は不要です。生年月日だけで確定できない節入り境界は推測しません。</p></section>`}
 function show(html){const r=$("result");if(!r)return;r.style.display="block";r.innerHTML=html;r.scrollIntoView({behavior:"smooth",block:"start"})}
