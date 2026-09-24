@@ -33,6 +33,7 @@ export async function ensureRuntimeSchema(pool){
    content_type TEXT,content_length BIGINT,etag TEXT,uploaded_at TIMESTAMPTZ,deleted_at TIMESTAMPTZ,
    delete_requested_at TIMESTAMPTZ,delete_attempts INTEGER NOT NULL DEFAULT 0,delete_next_attempt_at TIMESTAMPTZ,delete_last_error TEXT,
    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS state TEXT NOT NULL DEFAULT 'pending_upload'`,
  `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS retention_mode TEXT NOT NULL DEFAULT 'ephemeral'`,
  `CREATE TABLE IF NOT EXISTS palm_reading_snapshots(
    id BIGSERIAL PRIMARY KEY,asset_id BIGINT NOT NULL UNIQUE REFERENCES palm_assets(id) ON DELETE CASCADE,subject_key TEXT NOT NULL,
