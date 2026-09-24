@@ -1,0 +1,17 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Palm Golden Labeler v2</title><link rel="stylesheet" href="./palm-labeler-v2-build40.css"></head><body>
+<main><header><div><p class="eyebrow">BUILD-40 · LOCAL QA TOOL</p><h1>Palm Golden Labeler v2</h1><p>画像はこのツールから外部送信しません。権利確認済み画像だけをラベル付けしてください。</p></div></header>
+<section class="controls">
+<label>画像<input id="file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label>線<select id="label"><option value="life">生命線</option><option value="head">知能線</option><option value="heart">感情線</option><option value="fate">運命線</option><option value="sun">太陽線</option><option value="wealth">財運線</option><option value="marriage">結婚線</option></select></label>
+<label>見え方<select id="visibility"><option>CLEAR</option><option>FAINT</option><option>OCCLUDED</option></select></label>
+<button id="newLine" type="button">現在の線を確定</button><button id="undo" type="button">1点戻す</button><button id="clear" type="button">現在の線を消す</button>
+</section>
+<section class="rights"><label>匿名Subject Group<input id="subjectGroup" minlength="8" maxlength="128" placeholder="例: subj_7f3c..."></label><label>手<select id="handSide"><option>LEFT</option><option>RIGHT</option></select></label>
+<label><input id="subjectConsent" type="checkbox"> 被写体本人から手相画像を評価用途に使う同意を得ている</label>
+<label><input id="commercialEval" type="checkbox"> 商用品質評価への利用許可がある</label>
+<label><input id="trainingAllowed" type="checkbox"> モデル学習にも利用してよい</label>
+<label>権利メモ<input id="sourceNote" maxlength="500" placeholder="自社撮影・本人同意など"></label>
+</section>
+<div class="stage"><canvas id="canvas"></canvas><div id="empty">画像を選択してください</div></div>
+<section class="footer"><output id="status" role="status"></output><button id="export" type="button">Annotation JSONを書き出す</button></section>
+</main><script type="module" src="./palm-labeler-v2-build40.js"></script></body></html>

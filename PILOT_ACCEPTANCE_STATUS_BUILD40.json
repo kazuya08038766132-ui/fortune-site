@@ -1,0 +1,174 @@
+{
+  "build": "BUILD-40",
+  "rc": 278,
+  "version": "SPEC327-BUILD-40-RC278",
+  "scope": "LOCAL_TECHNICAL_PREVIEW_ACCEPTANCE",
+  "pilotReady": true,
+  "productionReady": false,
+  "limitations": [
+    "No real browser visual QA evidence",
+    "No real provider E2E evidence",
+    "Production data/model blockers remain authoritative"
+  ],
+  "checks": [
+    {
+      "id": "surface:index.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:checkout-confirm.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:data-consent.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:membership-success.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:membership.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:mypage.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:palm-report-build40.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:premium-reading.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:privacy.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:recover.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:success.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:terms.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:tokusho.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "surface:verify-email.html",
+      "ok": true,
+      "detail": "present/version-bound"
+    },
+    {
+      "id": "route:/api/system-status",
+      "ok": true,
+      "detail": "declared"
+    },
+    {
+      "id": "route:/api/pilot-status",
+      "ok": true,
+      "detail": "declared"
+    },
+    {
+      "id": "route:/api/readiness",
+      "ok": true,
+      "detail": "declared"
+    },
+    {
+      "id": "route:/api/name-readiness",
+      "ok": true,
+      "detail": "declared"
+    },
+    {
+      "id": "free-birth-entry",
+      "ok": true,
+      "detail": "birth input wired"
+    },
+    {
+      "id": "birth-verified-min-bound",
+      "ok": true,
+      "detail": "verified birth lower bound visible"
+    },
+    {
+      "id": "birth-verified-max-bound",
+      "ok": true,
+      "detail": "verified birth upper bound visible"
+    },
+    {
+      "id": "preview-status-public-endpoint",
+      "ok": true,
+      "detail": "pilot readiness has explicit public endpoint"
+    },
+    {
+      "id": "paid-checkout-fail-closed",
+      "ok": true,
+      "detail": "checkout waits for provider/system status"
+    },
+    {
+      "id": "palm-production-fail-closed",
+      "ok": true,
+      "detail": "no production palm claim without verified model"
+    },
+    {
+      "id": "name-production-fail-closed",
+      "ok": true,
+      "detail": "name master absence returns 503"
+    },
+    {
+      "id": "production-not-misrepresented",
+      "ok": true,
+      "detail": "technical preview != production readiness"
+    }
+  ],
+  "summary": {
+    "passed": 26,
+    "failed": 0,
+    "total": 26
+  },
+  "artifactIntegrity": {
+    "algorithm": "sha256",
+    "artifacts": {
+      "index.html": "0ddbfad131a5bc4e3d314387c64549f0434add78397da205e251bb8eb41f5a16",
+      "checkout-confirm.html": "e02cdd192eaa6a4adfd1ec6e20fb987bfc6d8b991fbf713aa5a0f866c25501b3",
+      "data-consent.html": "f8ef5270643b11365339cbb878a2c5f9511ea35a31735f511302e0c56dc229c2",
+      "membership-success.html": "2c1b71db756771085d90ea1d4ad14812af4c32647388cd51101e950f2776237d",
+      "membership.html": "5a0060da48aafd49a46784701badb7ae788a9e970a7ee44a3736e1d2d64705dc",
+      "mypage.html": "549eadd177c918ace176fc61908d32a104e5d39f3de8b497c39dbf118c443667",
+      "palm-report-build40.html": "fb4e5a12810461c9907eebba7149bf77cbd2aa28d72c4c906fa00af99124cf21",
+      "premium-reading.html": "0b6858f7b7b68296c1873982a2d8af50302219250c153294153db4d61d1c409f",
+      "privacy.html": "92491210455c30b1fa3bc9c2e70ba0b8dc4df9fd7c7400f81a2ad97e6b10da5e",
+      "recover.html": "d487e1c3877f86e6989aa7afa279e9ec517f357a20134bcdbb9df380d9fa365b",
+      "success.html": "059fa5e1051d936bd210866f50535b3811f69e95bb7dbcacd2d60863990ca31b",
+      "terms.html": "dcfb891f8c389cac600129848e4616619ccfab29e7bea969881b8a759e8c81c8",
+      "tokusho.html": "fa8a5335275e67adb56e11b8f57460ae3ce875756d84c41f4563c7929ea3e68a",
+      "verify-email.html": "95dd04e5cd2c02433f7d53e5824787a8c455705c6069b0d612331d01e5eca460",
+      "server-integrated-build40.js": "4d7a83115ae5506831ee2a404400bb85b1855ca88399519780187b1499efa391",
+      "fortune-app-build40.js": "40b063e2718ba914732c0a67c518240c93c07930fc431668504e84b303fc6444",
+      "public-system-status-build40.js": "8ea4bd6d01a005ddeb3b929c0c82d4aae4ec906317c19820dd282717d14f96b8",
+      "public-pilot-status-build40.js": "de7b36bd3a70f462b218684a886a33d2adf9eb5626e5b9039de5365251774dc0",
+      "CURRENT_RELEASE_BUILD40.json": "aa2381ff2eb151dae28acfc0b80bee7eda390e0a62097ee0f5bcbd72f3ac1589"
+    }
+  }
+}
