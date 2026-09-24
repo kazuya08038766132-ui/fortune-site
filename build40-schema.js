@@ -1,0 +1,37 @@
+export async function ensureBuild40Schema(pool){
+ const qs=[
+ `CREATE TABLE IF NOT EXISTS user_accounts(id TEXT PRIMARY KEY,verified_email TEXT UNIQUE,email_verified_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE TABLE IF NOT EXISTS account_sessions(session_key TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE TABLE IF NOT EXISTS recovery_tokens(token_hash TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,expires_at TIMESTAMPTZ NOT NULL,used_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE INDEX IF NOT EXISTS recovery_tokens_due_idx ON recovery_tokens(expires_at) WHERE used_at IS NULL`,
+ `CREATE TABLE IF NOT EXISTS email_verification_tokens(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,session_key TEXT NOT NULL,expires_at TIMESTAMPTZ NOT NULL,used_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE INDEX IF NOT EXISTS email_verification_tokens_due_idx ON email_verification_tokens(expires_at) WHERE used_at IS NULL`,
+ `CREATE INDEX IF NOT EXISTS email_verification_tokens_session_idx ON email_verification_tokens(session_key,created_at DESC)`,
+ `CREATE TABLE IF NOT EXISTS account_order_links(account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,order_id TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(account_id,order_id))`,
+ `CREATE INDEX IF NOT EXISTS account_order_links_order_idx ON account_order_links(order_id)`,
+ `CREATE TABLE IF NOT EXISTS account_membership_links(account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,stripe_customer_id TEXT NOT NULL,stripe_subscription_id TEXT,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(account_id,stripe_customer_id))`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS state TEXT NOT NULL DEFAULT 'pending_upload'`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS content_type TEXT`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS content_length BIGINT`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS etag TEXT`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS uploaded_at TIMESTAMPTZ`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS retention_mode TEXT NOT NULL DEFAULT 'ephemeral'`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS delete_requested_at TIMESTAMPTZ`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS delete_attempts INTEGER NOT NULL DEFAULT 0`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS delete_next_attempt_at TIMESTAMPTZ`,
+ `ALTER TABLE palm_assets ADD COLUMN IF NOT EXISTS delete_last_error TEXT`,
+ `CREATE INDEX IF NOT EXISTS palm_assets_delete_retry_idx ON palm_assets(delete_next_attempt_at) WHERE state='delete_pending'`,
+
+ `CREATE INDEX IF NOT EXISTS palm_assets_owner_state_idx ON palm_assets(subject_key,state,created_at DESC)`,
+ `CREATE INDEX IF NOT EXISTS palm_assets_retention_due_idx ON palm_assets(delete_after) WHERE delete_after IS NOT NULL AND state <> 'deleted'`,
+ `CREATE TABLE IF NOT EXISTS email_outbox(id BIGSERIAL PRIMARY KEY,event_key TEXT NOT NULL UNIQUE,recipient TEXT NOT NULL,template_type TEXT NOT NULL,payload JSONB NOT NULL,status TEXT NOT NULL DEFAULT 'pending',attempts INTEGER NOT NULL DEFAULT 0,next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),provider_message_id TEXT,last_error TEXT,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),sent_at TIMESTAMPTZ)`,
+ `CREATE INDEX IF NOT EXISTS email_outbox_status_due_idx ON email_outbox(status,next_attempt_at)`,
+ `CREATE INDEX IF NOT EXISTS email_outbox_due_partial_idx ON email_outbox(next_attempt_at,created_at) WHERE status IN ('pending','retry_wait')`,
+ `CREATE TABLE IF NOT EXISTS daily_fortune_preferences(account_id TEXT PRIMARY KEY REFERENCES user_accounts(id) ON DELETE CASCADE,enabled BOOLEAN NOT NULL DEFAULT FALSE,birth_date DATE,send_hour_jst INTEGER NOT NULL DEFAULT 8 CHECK(send_hour_jst BETWEEN 5 AND 11),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE TABLE IF NOT EXISTS email_provider_events(provider TEXT NOT NULL DEFAULT 'resend',event_id TEXT NOT NULL,event_type TEXT NOT NULL,provider_message_id TEXT,payload JSONB NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(provider,event_id))`,
+ `CREATE TABLE IF NOT EXISTS membership_payment_events(id BIGSERIAL PRIMARY KEY,stripe_invoice_id TEXT NOT NULL,stripe_customer_id TEXT,stripe_subscription_id TEXT,event_type TEXT NOT NULL,payment_health TEXT NOT NULL,payload JSONB NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(stripe_invoice_id,event_type))`,
+ `CREATE INDEX IF NOT EXISTS membership_payment_events_subscription_idx ON membership_payment_events(stripe_subscription_id,created_at DESC)`
+ ]; for(const q of qs)await pool.query(q);
+}

@@ -1,0 +1,15 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>手相診断ガイド | BUILD-40 RC278</title><link rel="stylesheet" href="./palm-report-build40.css?v=188"></head><body data-release="SPEC327-BUILD-40-RC278"><a class="skip-link" href="#main">本文へ移動</a><main id="main"><div id="palmReport"></div></main><script type="module">
+import {renderPalmReport} from "./palm-report-view-build40.js";
+import {loadPalmPreview,clearPalmPreview} from "./palm-local-preview-store-build40.js";
+const root=document.getElementById("palmReport");let imageUrl="";
+try{
+ const saved=sessionStorage.getItem("fortune:palm-report");
+ if(!saved)throw Error("NO_REPORT");
+ const data=JSON.parse(saved);const blob=await loadPalmPreview().catch(()=>null);if(blob)imageUrl=URL.createObjectURL(blob);
+ renderPalmReport(root,{...data,imageUrl});
+ root.querySelector('[data-palm-recapture]')?.addEventListener('click',async()=>{await clearPalmPreview().catch(()=>{});sessionStorage.removeItem('fortune:palm-report');location.href='index.html?retake=1#reading';});
+ root.querySelector('[data-palm-print]')?.addEventListener('click',()=>window.print());
+ root.querySelector('[data-palm-delete]')?.addEventListener('click',async e=>{await clearPalmPreview().catch(()=>{});if(imageUrl){URL.revokeObjectURL(imageUrl);imageUrl='';}const img=root.querySelector('.palm-image-frame img');if(img)img.replaceWith(Object.assign(document.createElement('div'),{className:'palm-image-placeholder',textContent:'端末内の写真を削除しました'}));e.currentTarget.disabled=true;e.currentTarget.textContent='削除済み';});
+}catch{root.innerHTML='<section style="max-width:760px;margin:4rem auto;padding:2rem;font-family:system-ui,sans-serif"><h1>手相鑑定データがありません</h1><p>鑑定ページから手のひら写真を読み込み、解析完了後にレポートを開いてください。</p><p><a href="index.html#reading">鑑定ページへ戻る</a></p></section>';}
+window.addEventListener('pagehide',()=>{if(imageUrl)URL.revokeObjectURL(imageUrl)});
+</script></body></html>

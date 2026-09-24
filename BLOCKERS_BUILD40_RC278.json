@@ -1,0 +1,340 @@
+{
+  "build": "BUILD-40",
+  "rc": 278,
+  "productionReady": false,
+  "blockers": [
+    {
+      "id": "stripeE2E",
+      "status": "BLOCKED",
+      "reason": "real Stripe provider E2E evidence not executed"
+    },
+    {
+      "id": "r2E2E",
+      "status": "BLOCKED",
+      "reason": "real private R2 upload/finalize/delete E2E not executed"
+    },
+    {
+      "id": "resendE2E",
+      "status": "BLOCKED",
+      "reason": "real Resend send/webhook E2E not executed"
+    },
+    {
+      "id": "legalSellerIdentity",
+      "status": "BLOCKED",
+      "reason": "seller legal name/address/phone not supplied; must not fabricate"
+    },
+    {
+      "id": "contactChannel",
+      "status": "BLOCKED",
+      "reason": "production contact channel not supplied/verified"
+    },
+    {
+      "id": "nameMaster",
+      "status": "BLOCKED",
+      "reason": "official EDRDG KANJIDIC2 production corpus not yet acquired/imported/promoted; RC267 receipt verification now requires the same exact official URL allowlist as promotion and rejects arbitrary edrdg.org paths"
+    },
+    {
+      "id": "birthBoundaryMaster",
+      "status": "BLOCKED",
+      "reason": "Historical promotion programmatic API is now fail-closed on missing source PDF artifact; the legacy unbound promotion helper is no longer publicly exported and production caller audit finds no unbound callers. Verified registry remains 1955-2027 because real 1920-1954 PDF capture and independent double transcription are incomplete."
+    },
+    {
+      "id": "palmProductionModel",
+      "status": "BLOCKED",
+      "reason": "production palm model remains absent; RC268 now requires actual manifest/model/hand-landmarker/rights/metrics evidence verification in addition to blocker receipt fields before promotion"
+    },
+    {
+      "id": "accountRecoveryProviderE2E",
+      "status": "BLOCKED",
+      "reason": "provider-backed recovery E2E not executed"
+    },
+    {
+      "id": "realExpressHttpExecuted",
+      "status": "BLOCKED",
+      "reason": "Integrated HTTP smoke now also enforces Cross-Origin-Resource-Policy same-origin and X-DNS-Prefetch-Control off; real execution remains BLOCKED until production dependencies and PostgreSQL/runtime env are available."
+    },
+    {
+      "id": "realBrowserVisualQaExecuted",
+      "status": "BLOCKED",
+      "reason": "real desktop/mobile browser visual QA evidence has not completed in this container"
+    }
+  ],
+  "newlyCompletedRc107": [
+    "productionRootStaticExposureFixed",
+    "publicStaticAllowlist",
+    "productionSecurityHeadersIntegrated",
+    "trustProxyExplicitIntegrated",
+    "publicBrowserAssetGraphAudit"
+  ],
+  "newlyCompletedRc109": [
+    "checkoutIdempotencyCode",
+    "checkoutAttemptPersistence",
+    "stripeCheckoutApiIdempotencyKeys",
+    "checkoutRetryableFailureState"
+  ],
+  "newlyCompletedRc111": [
+    "stripeWebhookSessionBinding",
+    "stripeWebhookAsyncSettlementBoundToCheckoutAttempt",
+    "stripeWebhookCompletedSettlementBoundToCheckoutAttempt",
+    "stripeWebhookCrossSessionSettlementRejected"
+  ],
+  "newlyCompletedRc115": [
+    "palmDeleteRetryQueueCode",
+    "palmDeleteBackoffCode",
+    "palmUserDeleteDurableQueue",
+    "retentionWorkerDeletePendingRetry"
+  ],
+  "newlyCompletedRc117": [
+    "accountDataSummaryEndpoint",
+    "mypageDataUsageVisibility",
+    "palmRetentionVisibility",
+    "consentStateVisibility"
+  ],
+  "newlyCompletedRc119": [
+    "palmBreakBranchEvidenceConfidenceGate",
+    "palmWeakSemanticRelationFailClosed",
+    "palmSemanticEvidenceGate"
+  ],
+  "newlyCompletedRc120": [
+    "palmCandidateUniqueIdFallback",
+    "palmFiniteCoordinateGate",
+    "palmHighConfidenceNoiseFilter",
+    "palmStrictFeatureSchemaValidation",
+    "palmSemanticEvidenceConfidenceGateV2",
+    "palmConfidencePropagationToReading"
+  ],
+  "newlyCompletedRc124": [
+    "palmAttachedShortWrinkleGate",
+    "palmShortContactFalsePositiveSuppression"
+  ],
+  "newlyCompletedRc159": [
+    "httpRuntimePromotionGuard",
+    "runtimeDependencyTruthAudit",
+    "serverStartupMarkerAlignment"
+  ],
+  "newlyCompletedRc162": [
+    "nameMasterCanonicalSourceGate",
+    "nameMasterSourceDateParsing",
+    "nameMasterMonthlyFreshnessGate",
+    "nameMasterLicenceUpdateObligationAudit"
+  ],
+  "newlyCompletedRc164": [
+    "memberPalmHistoryList",
+    "memberPalmHistoryDeleteUi",
+    "runtimeRetentionModeSchemaAlignment",
+    "comparisonFailClosedUntilReadingSnapshots"
+  ],
+  "newlyCompletedRc165": [
+    "palmReadingSnapshotSchema",
+    "memberOnlySnapshotAuthorization",
+    "snapshotAssetBinding",
+    "palmPreviousCurrentComparison"
+  ],
+  "newlyCompletedRc166": [
+    "palmHistoryStabilityPolicy",
+    "palmRepeatCaptureReproducibilityGate",
+    "palmLowConfidenceRetake",
+    "palmChangeClaimSuppression"
+  ],
+  "newlyCompletedRc167": [
+    "palmContinuousFeatureDeadbands",
+    "palmAmbiguousClassificationSuppression"
+  ],
+  "newlyCompletedRc169": [
+    "repeat-capture smoothing connected to final palm reading pipeline",
+    "unstable repeat measurements fail closed to retake",
+    "stable smoothed features regenerate rules, synthesis, and final reading"
+  ],
+  "newlyCompletedRc170": [
+    "single-image micro-perturbation stability code",
+    "single-photo internal 3-condition reproducibility gate",
+    "RC170 local deterministic QA"
+  ],
+  "newlyCompletedRc173": [
+    "palmRetakeCauseGuidance",
+    "palmBlurDetection"
+  ],
+  "newlyCompletedRc174": [
+    "palmEndToEndUserFlow",
+    "palmRetakeGuidanceIntegrated"
+  ],
+  "newlyCompletedRc185": [
+    "providerFailureRecoveryQa",
+    "checkoutAndMembershipDoubleActionProtection",
+    "settlementRetryBackoffUx",
+    "verificationRecoveryRetryUx",
+    "palmUploadFreshPresignRetry",
+    "safeServerErrorLogging"
+  ],
+  "newlyCompletedRc186": [
+    "criticalProviderResponseJsonContract",
+    "invalidJsonFailClosed",
+    "boundedCriticalPageFetchTimeout"
+  ],
+  "newlyCompletedRc190": [
+    "sharedFirstPartyBrowserApiContract",
+    "legacyCsrfClientResponseHardening",
+    "accountRecoveryModuleResponseHardening",
+    "palmConsentModuleResponseHardening"
+  ],
+  "newlyCompletedRc196": [
+    "releaseStatusIntegratedVersionSynchronized",
+    "primarySurfaceReleaseMarkersSynchronized",
+    "serverStartupMarkerSynchronized",
+    "releaseMarkerDriftQa"
+  ],
+  "newlyCompletedRc202": [
+    "persistedFortuneDraftReleaseMarkerSynchronized",
+    "palmReportSessionReleaseMarkerSynchronized",
+    "consentHistoryDomEscaping",
+    "consentHistoryHttpFailClosed",
+    "persistedReleaseMarkerQa"
+  ],
+  "newlyCompletedRc203": [
+    "sharedBrowserApiContractForConsentHistory",
+    "sharedBrowserApiContractForPremiumReading",
+    "duplicateInlineFetchHelperRemoved",
+    "sharedContractRegressionQa"
+  ],
+  "newlyCompletedRc204": [
+    "verificationPageReleaseMarkerDriftFixed",
+    "verificationRecoveryLegalSharedBrowserApiContract",
+    "sharedBrowserApiMigrationQa"
+  ],
+  "newlyCompletedRc205": [
+    "sharedBrowserApiCriticalAssetManifest",
+    "remainingPrimaryBrowserApiHelperMigration",
+    "sharedBrowserApiDriftQa"
+  ],
+  "newlyCompletedRc208": [
+    "palmLineGeometryReproducibilityGate",
+    "minorCaptureVarianceTolerance",
+    "majorGeometryVarianceRetake",
+    "threeCaptureGeometryQa"
+  ],
+  "newlyCompletedRc209": [
+    "palmHistoryGeometryEvidenceV2",
+    "historyComparisonGeometryReproducibility",
+    "legacyHistorySnapshotCompatibility",
+    "sharedBrowserTimeoutUxSemanticFix",
+    "persistedPalmDraftReleaseMarkerSync"
+  ],
+  "newlyCompletedRc210": [
+    "palmPromotionEvidenceProvenanceGate",
+    "palmPromotionEvidenceHashBinding",
+    "palmProductionManifestEvidenceContract"
+  ],
+  "newlyCompletedRc213": [
+    "palmReportLocalImageSchemeAllowlist",
+    "palmReportUnsafeImageUrlFailClosed",
+    "palmReportImageUrlRegressionGate"
+  ],
+  "newlyCompletedRc215": [
+    "palmHistoryEvidenceV2ServerValidation",
+    "palmHistoryGeometryFiniteRangeGate",
+    "palmHistoryGeometryInjectionGate",
+    "legacyHistoryEvidenceV1Compatibility"
+  ],
+  "newlyCompletedRc216": [
+    "palmProductionManifestStrictContract",
+    "palmArtifactHashFormatGate",
+    "palmTensorShapeClassMapGate",
+    "palmPromotionTimestampFormatGate"
+  ],
+  "newlyCompletedRc217": [
+    "palmPromotionEvidenceReceipt",
+    "palmEvidenceReceiptHashVerification",
+    "palmEvidenceReceiptManifestConsistencyGate"
+  ],
+  "newlyCompletedRc218": [
+    "palmEvidenceReceiptStrictSchema",
+    "palmEvidenceReceiptUnknownFieldRejection",
+    "palmEvidenceReceiptSizeGate",
+    "palmEvidenceReceiptIdentifierAndTimestampValidation"
+  ],
+  "newlyCompletedRc219": [
+    "palmRightsEvidenceFileHashBinding",
+    "palmMetricsEvidenceFileHashBinding",
+    "palmEvidenceFileMissingFailClosed"
+  ],
+  "newlyCompletedRc220": [
+    "palmHandLandmarkerHashBinding",
+    "palmHandLandmarkerReceiptBinding",
+    "palmHandLandmarkerTamperFailClosed",
+    "palmPromotionToolHandAssetBinding"
+  ],
+  "newlyCompletedRc221": [
+    "palmBrowserAssetSha256Verification",
+    "palmNetworkModelTamperFailClosed",
+    "palmNetworkHandModelTamperFailClosed",
+    "palmReadinessHashRuntimeGate"
+  ],
+  "newlyCompletedRc222": [
+    "palmStoredHistoryEvidenceReadValidation",
+    "palmCorruptHistoryComparisonFailClosed",
+    "palmHistoryItemTrustStateGate",
+    "palmLegacyV1ReadCompatibilityPreserved"
+  ],
+  "newlyCompletedRc223": [
+    "palmReadingEnvelopeValidation",
+    "palmStoredReadingVersionMatchGate",
+    "palmStoredReadingConfidenceTagGate",
+    "palmHistoryEnvelopeFailClosed"
+  ],
+  "newlyCompletedRc224": [
+    "palmCanonicalReadingHashV1",
+    "palmStoredReadingHashVerification",
+    "palmReadingTamperFailClosed",
+    "palmLegacyReadingHashCompatibility"
+  ],
+  "newlyCompletedRc225": [
+    "palmHistoryRecordBindingHash",
+    "palmHistoryCrossRecordSwapDetection",
+    "palmHistorySubjectAssetBinding",
+    "palmLegacyRecordBindingCompatibility"
+  ],
+  "newlyCompletedRc237": [
+    "runtimeDependencyBootstrapGate",
+    "reproducibleNpmCiRemediation",
+    "dependencyInstallFailureTruthRecorded"
+  ],
+  "newlyCompletedRc239": [
+    "nameCorpusOfficialDistributionFreshnessEvidence",
+    "nameCorpusNoImportNoPromotionGate",
+    "rc239ReleaseConsistency"
+  ],
+  "newlyCompletedRc241": [
+    "productionBlockerOwnershipPlan",
+    "uncataloguedBlockerFailClosed",
+    "operatorVsProviderVsBuildSeparation",
+    "blockerNextActionManifest"
+  ],
+  "newlyCompletedRc243": [
+    "birthHistoricalSourceReceiptGenerator",
+    "naojDirectPdfByteHashBinding",
+    "sourceReceiptFailClosedBeforeDoubleReview"
+  ],
+  "newlyCompletedRc244": [
+    "birthHistoricalSourceReviewHashBinding",
+    "sourceReceiptYearAndUrlBinding",
+    "doubleReviewSourceReceiptGate",
+    "sourceArtifactTamperChainPrepared"
+  ],
+  "newlyCompletedRc247": [
+    "integratedHttpEndpointSpecificStatusContracts",
+    "integratedHttpResponseShapeValidation",
+    "readinessStatusBodyBinding",
+    "genericSub500SmokeAcceptanceRemoved"
+  ],
+  "integratedVersion": "SPEC299-BUILD-40-RC250",
+  "newlyCompletedRc252": [
+    "permissionsPolicyRuntimeContract",
+    "crossOriginOpenerPolicyRuntimeContract",
+    "xPoweredByAbsenceRuntimeContract",
+    "browserIsolationHeaderRegressionGate"
+  ],
+  "newlyCompletedRc253": [
+    "crossOriginResourcePolicyContract",
+    "dnsPrefetchDisabledContract"
+  ]
+}
