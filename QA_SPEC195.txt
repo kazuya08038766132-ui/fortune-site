@@ -1,8 +1,0 @@
-master_spec: PASS
-membership_490: PASS
-paid_11_chapters: PASS
-common_feature_v1: PASS
-dominant_hand_copy: PASS
-subscription_route: PASS
-membership_table: PASS
-secure_one_time_webhook: PASS
