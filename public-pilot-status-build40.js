@@ -1,0 +1,13 @@
+import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto';
+function failClosed(reason='Pilot acceptance evidence unavailable'){return {build:'BUILD-40',rc:null,version:'',scope:'LOCAL_TECHNICAL_PREVIEW_ACCEPTANCE',pilotReady:false,productionReady:false,limitations:[reason],summary:{passed:0,failed:1,total:1}};}
+const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+export function readPublicPilotStatus(evidencePath='PILOT_ACCEPTANCE_STATUS_BUILD40.json',releasePath='CURRENT_RELEASE_BUILD40.json'){
+ try{const x=JSON.parse(fs.readFileSync(evidencePath,'utf8')); const release=JSON.parse(fs.readFileSync(releasePath,'utf8')); const evidenceRc=Number.isInteger(x.rc)?x.rc:null, releaseRc=Number.isInteger(release.rc)?release.rc:null; const evidenceVersion=String(x.version||''),releaseVersion=String(release.integratedVersion||'');
+ const bound=x.build==='BUILD-40'&&release.build==='BUILD-40'&&evidenceRc!==null&&evidenceRc===releaseRc&&evidenceVersion!==''&&evidenceVersion===releaseVersion; if(!bound)return failClosed('Pilot acceptance evidence is stale or release-mismatched');
+ const passed=Number(x.summary?.passed),failed=Number(x.summary?.failed),total=Number(x.summary?.total); const summaryValid=Number.isSafeInteger(passed)&&Number.isSafeInteger(failed)&&Number.isSafeInteger(total)&&passed>=0&&failed>=0&&total>=0&&passed+failed===total; if(!summaryValid)return failClosed('Pilot acceptance evidence summary is invalid');
+ const integ=x.artifactIntegrity; if(integ?.algorithm!=='sha256'||!integ.artifacts||typeof integ.artifacts!=='object'||Array.isArray(integ.artifacts))return failClosed('Pilot acceptance artifact integrity evidence is missing or invalid');
+ const base=path.dirname(path.resolve(evidencePath)); const entries=Object.entries(integ.artifacts); if(entries.length<5)return failClosed('Pilot acceptance artifact integrity evidence is incomplete');
+ for(const [rel,expected] of entries){if(typeof rel!=='string'||rel.includes('..')||path.isAbsolute(rel)||!/^[a-f0-9]{64}$/.test(String(expected)))return failClosed('Pilot acceptance artifact integrity evidence is invalid'); const target=path.join(base,rel); if(!fs.existsSync(target)||sha(target)!==expected)return failClosed(`Pilot acceptance artifact changed: ${rel}`);}
+ return {build:'BUILD-40',rc:evidenceRc,version:evidenceVersion,scope:String(x.scope||'LOCAL_TECHNICAL_PREVIEW_ACCEPTANCE'),pilotReady:x.pilotReady===true&&failed===0,productionReady:x.productionReady===true,limitations:Array.isArray(x.limitations)?x.limitations.map(String).slice(0,12):[],summary:{passed,failed,total}};
+ }catch{return failClosed();}
+}

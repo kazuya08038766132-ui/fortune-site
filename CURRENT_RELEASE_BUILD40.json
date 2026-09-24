@@ -1,0 +1,10 @@
+{
+  "build": "BUILD-40",
+  "rc": 278,
+  "integratedVersion": "SPEC327-BUILD-40-RC278",
+  "productionReady": false,
+  "blockerSnapshot": "BLOCKERS_BUILD40_RC278.json",
+  "qa": "QA_BUILD40_RC278.md",
+  "handoff": "HANDOFF_BUILD40_RC278.md",
+  "qaReport": "QA_BUILD40_RC278.md"
+}
