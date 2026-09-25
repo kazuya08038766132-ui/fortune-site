@@ -1,1 +1,172 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="手相・生年月日・姓名判断をひとつにまとめた総合占い"><title>総合占い｜手相・生年月日・姓名判断</title><link rel="stylesheet" href="fortune-site-build40.css?v=189"></head><body data-release="SPEC327-BUILD-40-RC278"><a class="skip-link" href="#main">本文へ移動</a><header class="topbar"><div class="shell nav"><a class="brand" href="/">総合占い</a><nav class="navlinks"><a href="#reading">無料鑑定</a><a href="membership.html">月額会員</a><a href="mypage.html">マイページ</a><a class="keep btn ghost" href="#reading">鑑定する</a></nav></div></header><main id="main"><section class="hero"><div class="shell hero-grid"><div class="card hero-card"><div class="eyebrow">Palm × Birth × Name</div><h1>三つの視点から、<br>あなたを読み解く。</h1><p>手のひら、生年月日、姓名。異なる占術の情報を一つのレポートへまとめます。未確認データを推測で補わず、判定できない項目は保留として表示します。</p><div class="actions"><a class="btn primary" href="#reading">無料で始める</a><a class="btn ghost" href="membership.html">490円/月 会員</a><a class="btn ghost" href="mypage.html">マイページ</a></div></div><div class="card sigil" aria-hidden="true"></div></div></section><section class="section"><div class="shell"><div class="eyebrow">How it works</div><h2>鑑定は3つの入力から</h2><p class="sub">まず無料範囲を表示し、詳細鑑定は980円の買い切りです。</p><div class="flow"><div class="card item"><div class="num">01</div><h3>手相</h3><p class="mini">手のひら写真から主要線を読み取る設計。低信頼時は再撮影を案内します。</p></div><div class="card item"><div class="num">02</div><h3>生年月日</h3><p class="mini">節入りを基準に年柱・月柱を判定。出生時刻なしで境界日は断定しません。</p></div><div class="card item"><div class="num">03</div><h3>姓名</h3><p class="mini">現代表記の画数と五格を使用。未登録文字はDATA_VERIFYとして保留します。</p></div></div></div></section><section id="reading" class="section"><div class="shell"><div class="eyebrow">Free Reading</div><h2>無料鑑定をはじめる</h2><p class="sub">手相・生年月日・姓名判断を統合し、利用可能な機能だけを安全に表示します。準備中の機能は理由を明示し、推測結果を出しません。</p><div id="serviceState" aria-live="polite" class="status warn" style="margin-bottom:18px">利用可能な機能を確認しています。</div><form id="fortuneForm" class="card form-card"><div class="form-grid"><div class="field"><label for="familyName">姓</label><input id="familyName" autocomplete="family-name" placeholder="例：山田" maxlength="40" required><span class="help">姓名判断の五格計算に使用します。</span></div><div class="field"><label for="givenName">名</label><input id="givenName" autocomplete="given-name" placeholder="例：太郎" maxlength="40" required><span class="help">姓と名を分けて入力してください。</span></div><div class="field"><label for="birthDate">生年月日</label><input id="birthDate" type="date" min="1955-01-01" max="2027-12-31" data-max-today="true" required><span class="help">検証済み範囲：1955〜2027年。</span></div><div class="field full upload palm-capture"><div class="palm-capture-head"><div><label for="palmPhoto">手のひら写真（任意）</label><div class="help">カメラ撮影または既存写真を選択できます。</div></div><span class="pill">端末内チェック</span></div><div class="palm-guide" aria-label="手相写真の撮り方"><div><b>01</b><span>明るい場所</span><small>フラッシュより均一な照明</small></div><div><b>02</b><span>手のひら正面</span><small>傾けず、しわが見える向き</small></div><div><b>03</b><span>指先〜手首</span><small>手全体を画像内に収める</small></div><div><b>04</b><span>背景をシンプルに</span><small>手との境界が分かる背景</small></div></div><input id="palmPhoto" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"><div class="palm-preview-wrap"><img id="palmPreview" hidden alt="選択した手のひら写真"><button id="palmRetakeBtn" class="btn ghost" type="button" hidden>別の写真を選ぶ</button></div><div id="palmState" aria-live="polite" class="status warn" data-palm-ux="EMPTY">未選択｜指先から手首まで、手のひら全体が入るように撮影してください。</div><label class="check palm-history-optin"><input id="palmHistoryOptIn" type="checkbox"><span>月額会員として、この写真と今回の鑑定結果をマイページの手相履歴に保存する（任意）</span></label><div id="palmHistoryState" class="mini" aria-live="polite">未選択の場合、会員履歴には保存しません。</div><small>確認用の縮小画像はこの端末内に最大24時間だけ保持し、手相レポート表示に使用します。外部AIへ送信しません。学習利用は別同意です。</small></div><div class="field full"><label class="check"><input id="consent" type="checkbox" required><span>入力情報をこの鑑定のために処理することに同意します。利用目的はプライバシーポリシーとデータ利用ページで確認できます。手相写真をモデル学習へ利用する同意とは別です。</span></label></div><div class="field full"><div id="formState" aria-live="polite" class="status warn">無料鑑定は検証済みデータのみで生成します。</div></div><div class="field full"><div class="actions"><button class="btn primary" type="submit">無料鑑定を見る</button><a class="btn ghost" href="data-consent.html">データ利用について</a></div></div></div></form><section id="results" class="results"><div class="card form-card"><div class="result-head"><div><div class="eyebrow">Your Reading</div><h2 style="margin:.15em 0" id="resultSummary">無料鑑定</h2></div><span class="pill">FREE 7 ITEMS</span></div><div id="resultGrid" class="result-grid"></div><div class="premium"><div class="eyebrow" style="color:#d7b98d">Premium Reading</div><h2>詳細鑑定 980円</h2><p>有料版では年柱・月柱・日柱・日主を再計算し、姓名masterが利用可能なら五格＋81数理もサーバー側で再計算します。手相主要線はproduction model昇格後に統合し、未完成部分を偽の結果で埋めません。</p><div class="actions"><button id="premiumBtn" class="btn gold" type="button">980円の詳細鑑定へ</button></div></div></div></section></div></section><footer class="shell" style="padding:24px 0 40px"><p class="legal"><a href="/terms.html">利用規約</a> ／ <a href="/privacy.html">プライバシー</a> ／ <a href="/tokusho.html">特定商取引法に基づく表記</a></p></footer></main><footer class="footer"><div class="shell footer-grid"><div><strong>総合占い</strong><div class="mini">占術・エンターテインメントとして提供します。</div></div><div class="mini">医療診断、寿命の断定、科学的な未来予測を行うものではありません。</div></div><div class="shell devmark">SPEC327-BUILD-40-RC278 — palm UX integrated candidate</div></footer><script type="module" src="fortune-app-build40.js?v=187"></script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="手相・生年月日・姓名判断をひとつにまとめた総合占い">
+<title>総合占い｜手相・生年月日・姓名判断</title>
+<link rel="stylesheet" href="fortune-site-build40.css?v=190">
+<link rel="stylesheet" href="rc278-ui-restore.css?v=1">
+</head>
+<body data-release="SPEC327-BUILD-40-RC278">
+<a class="skip-link" href="#main">本文へ移動</a>
+
+<header class="fortuneHeader">
+  <div class="fortuneNav">
+    <a class="fortuneLogo" href="/" aria-label="総合占い ホーム">
+      <span class="fortuneMoonMark">☾</span>
+      <span><strong>総合占い</strong><small>FORTUNE</small></span>
+    </a>
+    <nav>
+      <a href="#reading">無料占い</a>
+      <a href="#reading">詳細鑑定 980円</a>
+      <a href="membership.html">月額会員</a>
+      <a href="mypage.html">マイページ</a>
+    </nav>
+  </div>
+
+  <div class="fortuneHero">
+    <div class="heroMoon" aria-hidden="true"></div>
+    <div class="magicCircle" aria-hidden="true">
+      <img class="magicLayer magicOuter" src="/magic-outer.png" alt="">
+      <img class="magicLayer magicZodiac" src="/magic-zodiac.png" alt="">
+      <img class="magicLayer magicInner" src="/magic-inner.png" alt="">
+    </div>
+    <div class="readerWrap" aria-hidden="true">
+      <div class="readerGlow"></div>
+      <img class="fortuneReader" src="/fortune-reader.png" alt="">
+      <div class="readerMist"></div>
+    </div>
+    <div class="twinkleField" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+
+    <div class="heroStars" aria-hidden="true">✦　✧　☾　✦　☆　✧　☽　✦</div>
+    <p class="heroLead">あなたの毎日に、星の導きを</p>
+    <h1 class="heroTitle">総合占い</h1>
+    <p class="heroCopy">姓名・生年月日・手のひらから、<br>あなたの運命を3つの視点で読み解く</p>
+    <div class="heroEnglish">FORTUNE FOR A BRIGHTER TOMORROW</div>
+
+    <div class="heroCtas">
+      <a class="heroCta" href="#reading"><span>✦</span>無料であなたの運勢を占う<span>›</span></a>
+      <a class="heroCta heroCtaSub" href="#reading"><span>✦</span>詳細鑑定 980円<span>›</span></a>
+    </div>
+
+    <div class="heroFortunes">
+      <div><span>♡</span><strong>恋愛運</strong><small>あの人との未来</small></div>
+      <div><span>♙</span><strong>仕事運</strong><small>これからの流れ</small></div>
+      <div><span>◎</span><strong>金運</strong><small>豊かさのヒント</small></div>
+      <div><span>♧</span><strong>健康運</strong><small>心と体のバランス</small></div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<section class="section">
+  <div class="shell">
+    <div class="eyebrow">How it works</div>
+    <h2>鑑定は3つの入力から</h2>
+    <p class="sub">まず無料範囲を表示し、詳細鑑定は980円の買い切りです。</p>
+    <div class="flow">
+      <div class="card item"><div class="num">01</div><h3>手相</h3><p class="mini">手のひら写真から主要線を読み取る設計。低信頼時は再撮影を案内します。</p></div>
+      <div class="card item"><div class="num">02</div><h3>生年月日</h3><p class="mini">節入りを基準に年柱・月柱を判定。出生時刻なしで境界日は断定しません。</p></div>
+      <div class="card item"><div class="num">03</div><h3>姓名</h3><p class="mini">現代表記の画数と五格を使用。未登録文字はDATA_VERIFYとして保留します。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="reading" class="section">
+  <div class="shell">
+    <div class="eyebrow">Free Reading</div>
+    <h2>無料鑑定をはじめる</h2>
+    <p class="sub">手相・生年月日・姓名判断を統合し、利用可能な機能だけを安全に表示します。準備中の機能は理由を明示し、推測結果を出しません。</p>
+    <div id="serviceState" aria-live="polite" class="status warn" style="margin-bottom:18px">利用可能な機能を確認しています。</div>
+
+    <form id="fortuneForm" class="card form-card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="familyName">姓</label>
+          <input id="familyName" autocomplete="family-name" placeholder="例：山田" maxlength="40" required>
+          <span class="help">姓名判断の五格計算に使用します。</span>
+        </div>
+        <div class="field">
+          <label for="givenName">名</label>
+          <input id="givenName" autocomplete="given-name" placeholder="例：太郎" maxlength="40" required>
+          <span class="help">姓と名を分けて入力してください。</span>
+        </div>
+        <div class="field">
+          <label for="birthDate">生年月日</label>
+          <input id="birthDate" type="date" min="1955-01-01" max="2027-12-31" data-max-today="true" required>
+          <span class="help">検証済み範囲：1955〜2027年。</span>
+        </div>
+
+        <div class="field full upload palm-capture">
+          <div class="palm-capture-head">
+            <div><label for="palmPhoto">手のひら写真（任意）</label><div class="help">カメラ撮影または既存写真を選択できます。</div></div>
+            <span class="pill">端末内チェック</span>
+          </div>
+          <div class="palm-guide" aria-label="手相写真の撮り方">
+            <div><b>01</b><span>明るい場所</span><small>フラッシュより均一な照明</small></div>
+            <div><b>02</b><span>手のひら正面</span><small>傾けず、しわが見える向き</small></div>
+            <div><b>03</b><span>指先〜手首</span><small>手全体を画像内に収める</small></div>
+            <div><b>04</b><span>背景をシンプルに</span><small>手との境界が分かる背景</small></div>
+          </div>
+          <input id="palmPhoto" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
+          <div class="palm-preview-wrap">
+            <img id="palmPreview" hidden alt="選択した手のひら写真">
+            <button id="palmRetakeBtn" class="btn ghost" type="button" hidden>別の写真を選ぶ</button>
+          </div>
+          <div id="palmState" aria-live="polite" class="status warn" data-palm-ux="EMPTY">未選択｜指先から手首まで、手のひら全体が入るように撮影してください。</div>
+          <label class="check palm-history-optin"><input id="palmHistoryOptIn" type="checkbox"><span>月額会員として、この写真と今回の鑑定結果をマイページの手相履歴に保存する（任意）</span></label>
+          <div id="palmHistoryState" class="mini" aria-live="polite">未選択の場合、会員履歴には保存しません。</div>
+          <small>確認用の縮小画像はこの端末内に最大24時間だけ保持し、手相レポート表示に使用します。外部AIへ送信しません。学習利用は別同意です。</small>
+        </div>
+
+        <div class="field full">
+          <label class="check"><input id="consent" type="checkbox" required><span>入力情報をこの鑑定のために処理することに同意します。利用目的はプライバシーポリシーとデータ利用ページで確認できます。手相写真をモデル学習へ利用する同意とは別です。</span></label>
+        </div>
+        <div class="field full"><div id="formState" aria-live="polite" class="status warn">無料鑑定は検証済みデータのみで生成します。</div></div>
+        <div class="field full">
+          <div class="actions">
+            <button class="btn primary" type="submit">無料鑑定を見る</button>
+            <a class="btn ghost" href="data-consent.html">データ利用について</a>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <section id="results" class="results">
+      <div class="card form-card">
+        <div class="result-head">
+          <div><div class="eyebrow">Your Reading</div><h2 style="margin:.15em 0" id="resultSummary">無料鑑定</h2></div>
+          <span class="pill">FREE 7 ITEMS</span>
+        </div>
+        <div id="resultGrid" class="result-grid"></div>
+
+        <div class="premium">
+          <div class="eyebrow" style="color:#d7b98d">Premium Reading</div>
+          <h2>詳細鑑定 980円</h2>
+          <p>有料版では年柱・月柱・日柱・日主を再計算し、姓名masterが利用可能なら五格＋81数理もサーバー側で再計算します。手相主要線はproduction model昇格後に統合し、未完成部分を偽の結果で埋めません。</p>
+          <div class="actions"><button id="premiumBtn" class="btn gold" type="button">980円の詳細鑑定へ</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<footer class="shell" style="padding:24px 0 40px">
+  <p class="legal"><a href="/terms.html">利用規約</a> ／ <a href="/privacy.html">プライバシー</a> ／ <a href="/tokusho.html">特定商取引法に基づく表記</a></p>
+</footer>
+</main>
+
+<footer class="footer">
+  <div class="shell footer-grid">
+    <div><strong>総合占い</strong><div class="mini">占術・エンターテインメントとして提供します。</div></div>
+    <div class="mini">医療診断、寿命の断定、科学的な未来予測を行うものではありません。</div>
+  </div>
+  <div class="shell devmark">SPEC327-BUILD-40-RC278 — palm UX integrated candidate</div>
+</footer>
+
+<script type="module" src="fortune-app-build40.js?v=188"></script>
+</body>
+</html>
