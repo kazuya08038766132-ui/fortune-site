@@ -6,7 +6,7 @@
 <meta name="description" content="手相・生年月日・姓名判断をひとつにまとめた総合占い">
 <title>総合占い｜手相・生年月日・姓名判断</title>
 <link rel="stylesheet" href="fortune-site-build40.css?v=190">
-<link rel="stylesheet" href="rc278-ui-restore.css?v=3">
+<link rel="stylesheet" href="rc278-ui-restore.css?v=4">
 
 <style id="rc278-mobile-scale-fix">
 @media (max-width:760px){
@@ -169,6 +169,83 @@
 @keyframes rc278InnerSpin{
   from{transform:translate(-50%,-50%) rotate(0deg)}
   to{transform:translate(-50%,-50%) rotate(-360deg)}
+}
+</style>
+
+
+<style id="rc278-visual-alignment-v2">
+@media (max-width:760px){
+  .readerWrap{
+    width:235px !important;
+    right:-36px !important;
+    top:48px !important;
+    bottom:auto !important;
+  }
+
+  .magicCircle{
+    width:310px !important;
+    height:310px !important;
+    right:-65px !important;
+    top:115px !important;
+  }
+
+  .magicLayer{
+    position:absolute !important;
+    top:50% !important;
+    left:50% !important;
+    width:100% !important;
+    height:100% !important;
+    right:auto !important;
+    bottom:auto !important;
+    margin:0 !important;
+    object-fit:contain !important;
+    transform-origin:50% 50% !important;
+  }
+
+  .magicOuter{
+    animation:rc278OuterSpinV2 112s linear infinite !important;
+  }
+
+  .magicZodiac{
+    animation:rc278MiddleSpinV2 78s linear infinite !important;
+  }
+
+  .magicInner{
+    animation:rc278InnerSpinV2 58s linear infinite !important;
+  }
+}
+
+#main{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(66,31,128,.28),transparent 30%),
+    linear-gradient(180deg,#08091e 0%,#140a34 100%) !important;
+  color:#f7f0e5;
+}
+
+#main .section h2{color:#fff4cf}
+#main .section .sub{color:#d7cde2}
+#main .section .eyebrow{color:#d7b15d}
+#main .card,
+#main .card h2,
+#main .card h3,
+#main .card p,
+#main .card label,
+#main .card .help,
+#main .card .mini{color:var(--ink)}
+#main .card .help,
+#main .card .mini{color:var(--muted)}
+
+@keyframes rc278OuterSpinV2{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278MiddleSpinV2{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278InnerSpinV2{
+  from{transform:translate(-50%,-50%) scale(.63) rotate(0deg)}
+  to{transform:translate(-50%,-50%) scale(.63) rotate(-360deg)}
 }
 </style>
 
