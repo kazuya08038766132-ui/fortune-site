@@ -6,7 +6,7 @@
 <meta name="description" content="手相・生年月日・姓名判断をひとつにまとめた総合占い">
 <title>総合占い｜手相・生年月日・姓名判断</title>
 <link rel="stylesheet" href="fortune-site-build40.css?v=190">
-<link rel="stylesheet" href="rc278-ui-restore.css?v=2">
+<link rel="stylesheet" href="rc278-ui-restore.css?v=3">
 
 <style id="rc278-mobile-scale-fix">
 @media (max-width:760px){
@@ -106,6 +106,69 @@
     font-size:14px !important;
     border-bottom-width:3px !important;
   }
+}
+</style>
+
+
+<style id="rc278-magic-reader-alignment-fix">
+@media (max-width:760px){
+  /* 以前の見た目に近い位置へ戻す */
+  .magicCircle{
+    width:310px !important;
+    height:310px !important;
+    right:-65px !important;
+    top:115px !important;
+  }
+
+  .readerWrap{
+    width:235px !important;
+    right:-20px !important;
+    top:185px !important;
+    bottom:auto !important;
+  }
+
+  /* 3層すべてを同じ中心点に固定する */
+  .magicLayer{
+    position:absolute !important;
+    top:50% !important;
+    left:50% !important;
+    right:auto !important;
+    bottom:auto !important;
+    margin:0 !important;
+    object-fit:contain !important;
+    transform-origin:50% 50% !important;
+  }
+
+  .magicOuter{
+    width:100% !important;
+    height:100% !important;
+    animation:rc278OuterSpin 112s linear infinite !important;
+  }
+
+  .magicZodiac{
+    width:87% !important;
+    height:87% !important;
+    animation:rc278MiddleSpin 78s linear infinite !important;
+  }
+
+  .magicInner{
+    width:63% !important;
+    height:63% !important;
+    animation:rc278InnerSpin 58s linear infinite !important;
+  }
+}
+
+@keyframes rc278OuterSpin{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278MiddleSpin{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278InnerSpin{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(-360deg)}
 }
 </style>
 
