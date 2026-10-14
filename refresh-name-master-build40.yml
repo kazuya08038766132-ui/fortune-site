@@ -1,0 +1,127 @@
+name: Refresh BUILD-40 name master
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build40-name-master-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Download official KANJIDIC2
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://www.edrdg.org/kanjidic/kanjidic2.xml.gz"
+          curl --fail --location --retry 4 --retry-delay 3 \
+            --connect-timeout 20 --max-time 180 \
+            "$URL" -o /tmp/kanjidic2.xml.gz
+
+          test -s /tmp/kanjidic2.xml.gz
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("/tmp/kanjidic2.xml.gz")
+          b=p.read_bytes()
+          assert b[:2] == b"\x1f\x8b", "not gzip"
+          print("download bytes:", len(b))
+          PY
+
+      - name: Generate verified name master
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -f \
+            name-stroke-corpus-build40.json \
+            NAME_CORPUS_RECEIPT_BUILD40.json
+
+          node name-master-promotion-build40.mjs \
+            /tmp/kanjidic2.xml.gz \
+            "https://www.edrdg.org/kanjidic/kanjidic2.xml.gz" \
+            name-stroke-corpus-build40.json \
+            NAME_CORPUS_RECEIPT_BUILD40.json
+
+      - name: Verify receipt and runtime gate
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node name-master-receipt-verify-build40.mjs \
+            name-stroke-corpus-build40.json \
+            NAME_CORPUS_RECEIPT_BUILD40.json
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {nameMasterGate} from './name-master-gate-build40.js';
+          import {loadNameRuntime} from './name-master-runtime-build40.js';
+
+          const corpus=JSON.parse(
+            fs.readFileSync('name-stroke-corpus-build40.json','utf8')
+          );
+
+          const gate=nameMasterGate(corpus);
+          if(!gate.ready){
+            throw new Error(
+              'NAME_MASTER_GATE_NOT_READY ' + JSON.stringify(gate)
+            );
+          }
+
+          const runtime=loadNameRuntime(
+            'name-stroke-corpus-build40.json',
+            'NAME_CORPUS_RECEIPT_BUILD40.json'
+          );
+
+          if(!runtime.ready){
+            throw new Error(
+              'NAME_RUNTIME_NOT_READY ' + runtime.status
+            );
+          }
+
+          console.log(JSON.stringify({
+            ok:true,
+            records:corpus.stats.characters,
+            verified:corpus.stats.verified,
+            sourceDate:corpus.meta.sourceDate,
+            runtimeStatus:runtime.status
+          },null,2));
+          NODE
+
+      - name: Commit generated master
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "fortune-site build bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add \
+            name-stroke-corpus-build40.json \
+            NAME_CORPUS_RECEIPT_BUILD40.json
+
+          if git diff --cached --quiet; then
+            echo "No name-master changes."
+            exit 0
+          fi
+
+          git commit -m "Refresh BUILD-40 verified KANJIDIC2 name master"
+          git push origin HEAD:main
