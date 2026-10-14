@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="総合占い 開発QAモード">
+<title>開発QA｜総合占い</title>
+<link rel="stylesheet" href="fortune-site-build40.css?v=190">
+</head>
+<body>
+<a class="skip-link" href="#main">本文へ移動</a>
+<div class="publicTopNav"><strong>✦ 総合占い QA</strong><a class="accountIcon" href="/" aria-label="通常画面へ">⌂</a></div>
+<div class="previewNotice">Technical Preview専用の確認ページです。通常ユーザー向け画面には表示しません。</div>
+
+<main id="main">
+<section class="section">
+  <div class="shell">
+    <div class="eyebrow">Development QA</div>
+    <h1>開発QAモード</h1>
+    <p class="sub">名前・生年月日の手入力をせず、無料鑑定コア・姓名判断・手相準備状態をまとめて確認します。</p>
+
+    <div class="actions">
+      <button id="runAllQa" class="btn primary" type="button">全QAを実行</button>
+      <button id="copyQa" class="btn ghost" type="button">QA結果をコピー</button>
+      <a class="btn ghost" href="/">通常画面へ戻る</a>
+    </div>
+    <div id="overallState" class="status warn" aria-live="polite">未実行</div>
+
+    <div class="result-grid">
+      <article class="card result-card">
+        <h2>無料7項目</h2>
+        <div id="birthQaState" class="status warn">未実行</div>
+        <div id="birthQaDetails" class="mini"></div>
+      </article>
+
+      <article class="card result-card">
+        <h2>姓名判断</h2>
+        <div id="nameQaState" class="status warn">未実行</div>
+        <div id="nameQaDetails" class="mini"></div>
+      </article>
+
+      <article class="card result-card">
+        <h2>手相QA</h2>
+        <p class="mini">QA用写真はこの端末内だけに最大30日保存できます。外部へ送信しません。</p>
+        <input id="palmFixtureInput" type="file" accept="image/jpeg,image/png,image/webp">
+        <div class="actions">
+          <button id="savePalmFixture" class="btn ghost" type="button">この写真をQA用に保存</button>
+          <button id="runPalmQa" class="btn ghost" type="button">保存済み写真でQA</button>
+          <button id="clearPalmFixture" class="btn ghost" type="button">保存写真を削除</button>
+        </div>
+        <div id="palmQaState" class="status warn">保存済み写真を確認していません。</div>
+        <img id="palmFixturePreview" hidden alt="QA用手相写真">
+        <div id="palmQaDetails" class="mini"></div>
+      </article>
+
+      <article class="card result-card">
+        <h2>サーバー状態</h2>
+        <div id="serverQaState" class="status warn">未実行</div>
+        <div id="serverQaDetails" class="mini"></div>
+      </article>
+    </div>
+
+    <section class="card form-card">
+      <h2>QAレポート</h2>
+      <pre id="qaJson" class="mini">未実行</pre>
+    </section>
+  </div>
+</section>
+</main>
+
+<script type="module" src="qa-build40.js?v=1"></script>
+</body>
+</html>
