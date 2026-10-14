@@ -1,0 +1,12 @@
+{
+  "schema": "name-corpus-receipt/v2",
+  "officialSourceUrl": "https://www.edrdg.org/kanjidic/kanjidic2.xml.gz",
+  "downloadSha256": "c1faf3214ba58748757cb297619414d427434ee76b68eaaf31e89d707b4d4ef5",
+  "sourceXmlSha256": "2fef19428cebb26d9aab09ce40cfa0a37610432949d687a8a37cedddc8c8e18b",
+  "importedRecordCount": 13108,
+  "importSha256": "5a188904c96f60b0b5143d79211ed8f9739aba97b90b8247fa19917ce3e8deee",
+  "sourceDate": "2026-10-14",
+  "sourceFileVersion": "4",
+  "sourceDatabaseVersion": "2026-287",
+  "acceptedAt": "2026-10-14T05:46:54.418Z"
+}
