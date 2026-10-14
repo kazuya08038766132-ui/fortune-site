@@ -17,15 +17,17 @@ import {publicStaticMiddleware} from "./public-static-surface-build40.js";
 import {securityHeaders} from "./security-headers-build40.js";
 import {configureProxyTrust} from "./client-ip-build40.js";
 import {requestIdMiddleware,apiNoStore,rateLimit,productionErrorHandler} from "./api-security-build40.js";
-import {readCheckoutRequestKey,stripeCheckoutIdempotencyKey,sameCheckoutOwner,reusableCheckout} from "./checkout-idempotency-build40.js";
+import {readCheckoutRequestKey,stripeCheckoutIdempotencyKey,sameCheckoutOwner,reusableCheckout,terminalCheckout,terminalCheckoutPayload} from "./checkout-idempotency-build40.js";
 import {materializePremiumReading} from "./premium-reading-snapshot-build40.js";
-import {buildIntegratedFortuneSynthesis} from "./integrated-fortune-synthesis-build40.js";
+import {FUNNEL_SCHEMA,normalizeFortuneInput,fortuneInputDigest,readFreeChoice,calculateFortuneSources,composeFortuneFunnel} from './fortune-funnel-build40.js';
+import {mountFortuneFunnelRoutes} from './fortune-funnel-routes-build40.js';
 import {buildAccountDataSummary} from "./account-data-summary-build40.js";
 
 export function createIntegratedBuild40({
  pool,stripe,baseUrl,priceYen=980,membershipPriceYen=490,
  csrf, r2, resend, recovery, verification, readiness, stripeEvents
 }){
+ if(priceYen!==980)throw Error('RC285 detail price must be 980 yen');
  assertIntegratedAdapters({pool,csrf,r2,resend,recovery,verification,readiness,stripeEvents,baseUrl});
  const palm=createAuthorizedPalm(r2);
  const nameRuntime=createNameReadingRuntime(process.env.NAME_MASTER_PATH||"name-stroke-corpus-build40.json",process.env.NAME_MASTER_RECEIPT_PATH||"NAME_CORPUS_RECEIPT_BUILD40.json");
@@ -53,6 +55,8 @@ export function createIntegratedBuild40({
  const subscriptionLimit=rateLimit({name:"subscription",limit:8,windowMs:10*60*1000});
  const nameLimit=rateLimit({name:"name-reading",limit:40,windowMs:10*60*1000});
  const palmLimit=rateLimit({name:"palm",limit:30,windowMs:10*60*1000});
+ const getPalmReadiness=()=>inspectPalmProductionFiles({root:process.cwd()});
+ mountFortuneFunnelRoutes(app,{pool,auth,nameRuntime,getPalmReadiness,sameOrigin,csrfGuard,readingLimit:nameLimit});
 
  async function ownedOrder(req,res,id){
    const c=await auth.resolve(req,res);
@@ -88,7 +92,9 @@ export function createIntegratedBuild40({
  app.get("/api/pilot-status",(_req,res)=>{res.setHeader("Cache-Control","no-store");res.json(readPublicPilotStatus())});
  app.get("/api/legal-public",(_req,res)=>{const l=getLegalSellerConfig();res.setHeader("Cache-Control","no-store");if(!l.ready)return res.status(503).json({ready:false});res.json({ready:true,sellerName:l.sellerName,sellerAddress:l.sellerAddress,sellerPhone:l.sellerPhone,contactEmail:l.contactEmail})});
  app.get("/api/name-readiness",(_req,res)=>{res.setHeader("Cache-Control","no-store");res.json(nameRuntime.readiness())});
- app.post("/api/name-reading",sameOrigin,nameLimit,csrfGuard,(req,res)=>{
+ app.post("/api/name-reading",sameOrigin,nameLimit,csrfGuard,async(req,res)=>{
+   const c=await auth.resolve(req,res),choice=await readFreeChoice(pool,c.accountId);
+   if(choice?.fortune_type!=='name')return res.status(403).json({status:'FREE_NAME_LOCKED',error:'free_fortune_selection_required'});
    const familyName=String(req.body?.familyName||"").slice(0,40),givenName=String(req.body?.givenName||"").slice(0,40);
    const result=nameRuntime.reading({familyName,givenName});
    if(result.status==="MASTER_NOT_PRESENT"||result.status==="MASTER_GATE_FAILED"||result.status==="MASTER_LOAD_ERROR")return res.status(503).json(result);
@@ -118,6 +124,13 @@ export function createIntegratedBuild40({
  app.post("/api/create-checkout-session",sameOrigin,checkoutLimit,csrfGuard,async(req,res)=>{
    if(!getLegalSellerConfig().ready)return res.status(503).json({error:"legal_disclosure_unavailable"});
    if(!stripe)return res.status(503).json({error:"stripe_unavailable"});
+   const purchaser=await auth.resolve(req,res),choice=await readFreeChoice(pool,purchaser.accountId);
+   if(!purchaser.accountId||!choice)return res.status(409).json({error:'free_fortune_selection_required'});
+   const parsed=normalizeFortuneInput(choice.reading_input);
+   if(!parsed.ok)return res.status(409).json({error:'reading_input_required'});
+   if(req.body?.readingInputDigest!==fortuneInputDigest(parsed.input))return res.status(409).json({error:'reading_input_changed'});
+   const purchaseSources=await calculateFortuneSources({pool,accountId:purchaser.accountId,input:parsed.input,nameRuntime,palmReadiness:getPalmReadiness()});
+   if(Object.values(purchaseSources).some(x=>x.status!=='OK'))return res.status(503).json({error:'complete_reading_unavailable'});
    const requestKey=readCheckoutRequestKey(req);if(!requestKey)return res.status(400).json({error:"idempotency_key_required"});
    const s=sid(req,res),product="detail";
    let a=(await pool.query("SELECT * FROM checkout_attempts WHERE request_key=$1 LIMIT 1",[requestKey])).rows[0];
@@ -131,7 +144,7 @@ export function createIntegratedBuild40({
        await c.query("BEGIN");
        const ins=await c.query("INSERT INTO checkout_attempts(request_key,session_key,product_type,resource_id,state) VALUES($1,$2,$3,$4,'pending') ON CONFLICT(request_key) DO NOTHING RETURNING request_key",[requestKey,s,product,id]);
        if(ins.rowCount){
-         await c.query("INSERT INTO orders(id,status,amount,currency,payment_status,premium_status,reading) VALUES($1,'pending',$2,'jpy','pending','locked',$3)",[id,priceYen,req.body?.reading||{}]);
+         await c.query("INSERT INTO orders(id,status,amount,currency,payment_status,premium_status,reading) VALUES($1,'pending',$2,'jpy','pending','locked',$3)",[id,priceYen,parsed.input]);
          await c.query("INSERT INTO account_orders(session_key,order_id) VALUES($1,$2) ON CONFLICT DO NOTHING",[s,id]);
          const authContext=await auth.resolve(req,res);
          if(authContext.accountId)await c.query("INSERT INTO account_order_links(account_id,order_id) VALUES($1,$2) ON CONFLICT DO NOTHING",[authContext.accountId,id]);
@@ -197,16 +210,15 @@ export function createIntegratedBuild40({
  });
  app.get("/api/my-order-reading/:orderId",async(req,res)=>{
    const id=String(req.params.orderId||"").slice(0,120),s=await ownedOrder(req,res,id);if(!s)return safeNotFound(res);
-   const result=await materializePremiumReading({pool,orderId:id,buildReading:async(stored)=>{
-     const birthDate=stored?.birthDate;
-     const premiumBirth=birthDate?buildBirthReading(birthDate):{status:"MISSING_BIRTH_DATE"};
-     const familyName=String(stored?.familyName||"").slice(0,40),givenName=String(stored?.givenName||"").slice(0,40);
-     const premiumName=(familyName&&givenName)?nameRuntime.reading({familyName,givenName}):{status:"MISSING_NAME"};
-     const integrated=buildIntegratedFortuneSynthesis({premiumBirth,premiumName,palmReading:stored?.palmReading||stored?.palm?.reading||null});
-     return {...stored,premiumBirth,premiumName,integrated,_snapshot:{schema:"premium-reading-v2",materializedAt:new Date().toISOString()}};
+   const choice=await readFreeChoice(pool,s.accountId);
+   const result=await materializePremiumReading({pool,orderId:id,snapshotSchema:FUNNEL_SCHEMA,buildReading:async(stored)=>{
+     const parsed=normalizeFortuneInput(stored);if(!parsed.ok)return null;
+     const raws=await calculateFortuneSources({pool,accountId:s.accountId,input:parsed.input,nameRuntime,palmReadiness:getPalmReadiness()});
+     return composeFortuneFunnel({input:parsed.input,freeFortuneType:choice?.fortune_type||'shichusuimei',raws,paid:true});
    }});
    if(result.status==="NOT_FOUND")return safeNotFound(res);
    if(result.status==="PAYMENT_REQUIRED")return res.status(403).json({error:"payment_required"});
+   if(result.status==='INPUT_REQUIRED')return res.status(409).json({error:'reading_input_required'});
    res.setHeader("Cache-Control","no-store, private");res.json({paid:true,order:{id,premium_status:result.order.premium_status,paid_at:result.order.paid_at},reading:result.reading,snapshotCreated:result.created});
  });
  app.post("/api/my-customer-portal",sameOrigin,csrfGuard,async(req,res)=>{

@@ -90,6 +90,12 @@ async function runNameQa(system){
   const {token}=await readJsonSafe(c);
   const r=await fetchSafe('/api/name-reading',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':token},body:JSON.stringify({familyName:'山田',givenName:'太郎'})});
   const body=await readJsonSafe(r);
+  if(r.status===403&&body?.status==='FREE_NAME_LOCKED'&&system?.qa?.name?.status==='PASS'){
+   const x={status:'PASS',httpStatus:403,readingStatus:body.status,engineStatus:'PASS',accessGate:'PASS'};
+   setState($('#nameQaState'),'ok','PASS｜姓名エンジン・無料選択の権限制御');
+   $('#nameQaDetails').textContent='サーバーの姓名QAはPASS。未選択の姓名本文がAPIから返されないことを確認しました。';
+   return x;
+  }
   const pass=r.ok&&body?.status==='OK'&&Number.isInteger(body?.fiveGrid?.person)&&Number.isInteger(body?.fiveGrid?.total);
   const x={status:pass?'PASS':'FAIL',httpStatus:r.status,readingStatus:body?.status||'UNKNOWN',fiveGrid:body?.fiveGrid||null,numerologyEntryCount:Array.isArray(body?.numerology?.entries)?body.numerology.entries.length:0};
   setState($('#nameQaState'),pass?'ok':'bad',pass?'PASS｜山田太郎の姓名判断API':'FAIL｜姓名判断API');

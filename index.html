@@ -7,12 +7,13 @@
 <title>総合占い｜手相・生年月日・姓名判断</title>
 <link rel="stylesheet" href="fortune-site-build40.css?v=190">
 <link rel="stylesheet" href="rc278-ui-restore.css?v=6">
+<link rel="stylesheet" href="fortune-funnel-build40.css?v=286">
 </head>
 <body data-release="SPEC327-BUILD-40-RC278">
 <a class="skip-link" href="#main">本文へ移動</a>
-<div class="devBuildBanner">開発版：RC285 ｜ 基準リリース：SPEC327-BUILD-40-RC278</div>
+<div class="devBuildBanner">開発版：RC286 ｜ 基準リリース：SPEC327-BUILD-40-RC278</div>
 <div class="publicTopNav"><strong>✦ 総合占い</strong><a class="accountIcon" href="mypage.html" aria-label="マイページ">👤</a></div>
-<div class="previewNotice">開発確認版：¥980詳細鑑定・月額会員ページは決済なしでプレビューできます。公開時は開発入口をOFFにします。</div>
+<div class="previewNotice">開発確認版：無料は1占術を選択。詳細鑑定は支払い確認後に解放します。</div>
 
 <header class="fortuneHeader">
   <div class="fortuneNav">
@@ -74,7 +75,7 @@
   <div class="shell">
     <div class="eyebrow">How it works</div>
     <h2>鑑定は3つの入力から</h2>
-    <p class="sub">まず無料範囲を表示し、詳細鑑定は980円の買い切りです。</p>
+    <p class="sub">3つの占術から1つを無料でしっかり鑑定。詳細鑑定は980円の買い切りです。</p>
     <div class="flow">
       <div class="card item"><div class="num">01</div><h3>手相</h3><p class="mini">手のひら写真から主要線を読み取る設計。低信頼時は再撮影を案内します。</p></div>
       <div class="card item"><div class="num">02</div><h3>生年月日</h3><p class="mini">節入りを基準に年柱・月柱を判定。出生時刻なしで境界日は断定しません。</p></div>
@@ -87,7 +88,7 @@
   <div class="shell">
     <div class="eyebrow">Free Reading</div>
     <h2>無料鑑定をはじめる</h2>
-    <p class="sub">手相・生年月日・姓名判断を統合し、利用可能な機能だけを安全に表示します。準備中の機能は理由を明示し、推測結果を出しません。</p>
+    <p class="sub">四柱推命・姓名判断・手相から、無料で詳しく見る占術を1つ選んでください。同じアカウントでは、確定後に占術を変更できません。</p>
     <div id="serviceState" aria-live="polite" class="status warn" style="margin-bottom:18px">利用可能な機能を確認しています。</div>
 
     <form id="fortuneForm" class="card form-card">
@@ -107,6 +108,17 @@
           <input id="birthDate" type="date" min="1955-01-01" max="2027-12-31" data-max-today="true" required>
           <span class="help">検証済み範囲：1955〜2027年。</span>
         </div>
+
+        <fieldset class="field full free-choice">
+          <legend>無料で詳しく見る占術を1つ選ぶ</legend>
+          <div class="free-choice-options">
+            <label class="free-choice-option"><input type="radio" name="freeFortuneType" value="shichusuimei"><span><strong>四柱推命</strong><small>生年月日から本質と得意な流れを読む</small></span></label>
+            <label class="free-choice-option"><input type="radio" name="freeFortuneType" value="name"><span><strong>姓名判断</strong><small>お名前の持ち味と5つの運勢を読む</small></span></label>
+            <label class="free-choice-option"><input type="radio" name="freeFortuneType" value="palm" disabled><span><strong>手相</strong><small id="palmChoiceHelp">鑑定の準備中です。写真品質は確認できます</small></span></label>
+          </div>
+          <p id="freeChoiceState" class="help" aria-live="polite">アカウントの無料選択を確認しています。</p>
+          <a id="freeAccountLink" class="btn ghost" href="mypage.html" hidden>マイページでメール確認をする</a>
+        </fieldset>
 
         <div class="field full upload palm-capture">
           <div class="palm-capture-head">
@@ -134,6 +146,11 @@
           <label class="check"><input id="consent" type="checkbox" required><span>入力情報をこの鑑定のために処理することに同意します。利用目的はプライバシーポリシーとデータ利用ページで確認できます。手相写真をモデル学習へ利用する同意とは別です。</span></label>
         </div>
         <div class="field full"><div id="formState" aria-live="polite" class="status warn">無料鑑定は検証済みデータのみで生成します。</div></div>
+        <div id="choiceConfirm" class="field full choice-confirm" hidden aria-labelledby="choiceConfirmTitle" tabindex="-1">
+          <strong id="choiceConfirmTitle">無料の占術を確定します</strong>
+          <p>無料で詳しく見られる占術は1種類です。<br>確定後は同じアカウントでは変更できません。</p>
+          <div class="actions"><button id="confirmFreeChoice" class="btn primary" type="button">この占術で無料鑑定する</button><button id="cancelFreeChoice" class="btn ghost" type="button">選び直す</button></div>
+        </div>
         <div class="field full">
           <div class="actions">
             <button class="btn primary" type="submit">無料鑑定を見る</button>
@@ -143,19 +160,20 @@
       </div>
     </form>
 
-    <section id="results" class="results">
+    <section id="results" class="results funnel-surface">
       <div class="card form-card">
         <div class="result-head">
           <div><div class="eyebrow">Your Reading</div><h2 style="margin:.15em 0" id="resultSummary">無料鑑定</h2></div>
-          <span class="pill">FREE 7 ITEMS</span>
+          <span class="pill">選んだ1占術を全文で鑑定</span>
         </div>
         <div id="resultGrid" class="result-grid"></div>
 
         <div class="premium">
           <div class="eyebrow" style="color:#d7b98d">Premium Reading</div>
-          <h2>詳細鑑定 980円</h2>
-          <p>有料版では年柱・月柱・日柱・日主を再計算し、姓名masterが利用可能なら五格＋81数理もサーバー側で再計算します。手相主要線はproduction model昇格後に統合し、未完成部分を偽の結果で埋めません。</p>
-          <div class="actions"><button id="premiumBtn" class="btn gold" type="button">980円の詳細鑑定へ</button></div>
+          <h2>3つの占術から、もっと深くあなたを知る</h2>
+          <ul><li>残り2つの占術をすべて解放</li><li>無料で選んだ占術もさらに詳しく</li><li>3占術を統合した総合鑑定と、あなた向けのアドバイス</li></ul>
+          <p>買い切り980円。未確認の結果は作らず、提供の準備が整うまで購入を停止します。</p>
+          <div class="actions"><button id="premiumBtn" class="btn gold" type="button">詳細有料鑑定を見る 980円</button></div>
         </div>
       </div>
     </section>
@@ -175,7 +193,6 @@
   <div class="shell devmark">SPEC327-BUILD-40-RC278 — palm UX integrated candidate</div>
 </footer>
 
-<script type="module" src="fortune-app-build40.js?v=188"></script>
-<script type="module" src="free-result-presenter-build40.js?v=1"></script>
+<script type="module" src="fortune-app-build40.js?v=286"></script>
 </body>
 </html>

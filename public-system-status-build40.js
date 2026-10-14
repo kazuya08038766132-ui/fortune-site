@@ -64,7 +64,7 @@ export function buildPublicSystemStatus({stripe=null,r2=null,resend=null,recover
   if(!capabilities.oneTimeCheckout)notices.push({code:'PAYMENT_PROVIDER_PENDING',scope:'payment',message:'現在、決済接続は準備中です。無料鑑定は利用できます。'});
   if(!capabilities.emailDelivery)notices.push({code:'EMAIL_PROVIDER_PENDING',scope:'email',message:'メール配信は準備中です。鑑定結果は画面・マイページを優先してください。'});
   if(!legal.ready)notices.push({code:'LEGAL_SELLER_PENDING',scope:'legal',message:'事業者氏名・住所・電話番号・連絡先が未設定のため、有料申込みは停止中です。'});
-  capabilities.oneTimeCheckout=capabilities.oneTimeCheckout&&legal.ready;
+  capabilities.oneTimeCheckout=capabilities.oneTimeCheckout&&legal.ready&&capabilities.nameReading&&capabilities.palmProductionReading;
   capabilities.membershipCheckout=capabilities.membershipCheckout&&legal.ready;
 
   const birthQa=buildBirthQa();

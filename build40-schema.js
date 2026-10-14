@@ -1,6 +1,12 @@
 export async function ensureBuild40Schema(pool){
  const qs=[
  `CREATE TABLE IF NOT EXISTS user_accounts(id TEXT PRIMARY KEY,verified_email TEXT UNIQUE,email_verified_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+ `CREATE TABLE IF NOT EXISTS account_free_fortunes(account_id TEXT PRIMARY KEY REFERENCES user_accounts(id) ON DELETE CASCADE,fortune_type TEXT NOT NULL CHECK(fortune_type IN ('shichusuimei','name','palm')),selected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),reading_input JSONB NOT NULL DEFAULT '{}'::jsonb)`,
+ `ALTER TABLE palm_reading_snapshots ADD COLUMN IF NOT EXISTS inference_verified_at TIMESTAMPTZ`,
+ `ALTER TABLE palm_reading_snapshots ADD COLUMN IF NOT EXISTS inference_model_id TEXT`,
+ `ALTER TABLE palm_reading_snapshots ADD COLUMN IF NOT EXISTS inference_model_sha256 TEXT`,
+ `ALTER TABLE palm_reading_snapshots ADD COLUMN IF NOT EXISTS inference_reading_sha256 TEXT`,
+ `ALTER TABLE palm_reading_snapshots ADD COLUMN IF NOT EXISTS inference_overlay JSONB`,
  `CREATE TABLE IF NOT EXISTS account_sessions(session_key TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
  `CREATE TABLE IF NOT EXISTS recovery_tokens(token_hash TEXT PRIMARY KEY,account_id TEXT NOT NULL REFERENCES user_accounts(id) ON DELETE CASCADE,expires_at TIMESTAMPTZ NOT NULL,used_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
  `CREATE INDEX IF NOT EXISTS recovery_tokens_due_idx ON recovery_tokens(expires_at) WHERE used_at IS NULL`,
