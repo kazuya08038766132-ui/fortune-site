@@ -16,7 +16,7 @@ export function buildBirthReading(birthDate,options={}){
  if(yearBoundary.status!=='OK'||monthBoundary.status!=='OK')return {status:'BOUNDARY_UNCERTAIN',birthDate,yearBoundary,monthBoundary};
  const yearPillar=sexagenaryYear(yearBoundary.pillarYear),monthPillar=sexagenaryMonth(yearBoundary.pillarYear,monthBoundary.monthNo),dayPillar=sexagenaryDay(birthDate);
  if(dayPillar.status!=='OK')return {status:'INVALID_DATE'};
- const freeCards=composeFreeBirthCards({yearPillar,monthPillar,boundary:monthBoundary});
+ const freeCards=composeFreeBirthCards({yearPillar,monthPillar,dayPillar,boundary:monthBoundary,birthDate});
  const premiumCards=composePremiumBirthCards({yearPillar,monthPillar,dayPillar,monthBoundary});
  return {status:'OK',birthDate,yearBoundary,monthBoundary,yearPillar,monthPillar,dayPillar,dayMaster:{stem:dayPillar.dayMaster,element:dayPillar.element,yinYang:dayPillar.yinYang},freeCards,premiumCards,convention:{timezone:'Asia/Tokyo',birthTime:'omitted',dayBoundary:'civil date 00:00',hourPillar:'omitted'}};
 }
