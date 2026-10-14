@@ -6,6 +6,10 @@ export function nameMasterGate(corpus,{minCharacters=12000,asOf=new Date().toISO
  const sourceDateOk=/^\d{4}-\d{2}-\d{2}$/.test(String(m.sourceDate||""));
  let sourceAgeDays=null; if(sourceDateOk){sourceAgeDays=Math.floor((Date.parse(asOf+"T00:00:00Z")-Date.parse(m.sourceDate+"T00:00:00Z"))/86400000);}
  const freshness=sourceDateOk&&Number.isFinite(sourceAgeDays)&&sourceAgeDays>=0&&sourceAgeDays<=maxSourceAgeDays;
- const canonicalSource=/^https:\/\/(?:ftp\.)?edrdg\.org\/(?:pub\/Nihongo|kanjidic)\/kanjidic2\.xml(?:\.gz)?$/.test(String(m.sourceUrl||""));
+ const canonicalSource=new Set([
+  "https://www.edrdg.org/kanjidic/kanjidic2.xml.gz",
+  "https://www.edrdg.org/pub/Nihongo/kanjidic2.xml.gz",
+  "https://ftp.edrdg.org/pub/Nihongo/kanjidic2.xml.gz"
+ ]).has(String(m.sourceUrl||""));
  return {ready:provenance&&coverage&&accounting&&freshness&&canonicalSource,provenance,coverage,accounting,freshness,canonicalSource,sourceAgeDays,stats:s,minCharacters,maxSourceAgeDays};
 }
