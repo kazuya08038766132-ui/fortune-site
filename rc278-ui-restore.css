@@ -37,3 +37,165 @@ body{background:#08091e!important}
  .heroCtas{left:24px!important;right:24px!important;top:820px!important}.heroCta{min-height:78px!important;font-size:24px!important;padding:16px 26px!important;border:3px solid #dcb75c!important}
 }
 #main{background:linear-gradient(180deg,#08091e 0%,#140a34 100%)!important;color:#f7f0e5}
+
+/* RC278 FINAL MOBILE LOCK START */
+@media (max-width:760px){
+  .fortuneHero{
+    width:100% !important;
+    max-width:none !important;
+    height:720px !important;
+    min-height:720px !important;
+    max-height:720px !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+  }
+
+  .fortuneHero:after{
+    top:0 !important;
+    left:4px !important;
+    right:4px !important;
+    height:138px !important;
+    background-size:contain !important;
+  }
+
+  .heroMoon{
+    width:120px !important;
+    height:120px !important;
+    left:-18px !important;
+    top:150px !important;
+  }
+
+  .magicCircle{
+    display:block !important;
+    visibility:visible !important;
+    width:300px !important;
+    height:300px !important;
+    right:-95px !important;
+    top:135px !important;
+    z-index:3 !important;
+    opacity:.96 !important;
+    overflow:visible !important;
+  }
+
+  .magicLayer{
+    display:block !important;
+    visibility:visible !important;
+    position:absolute !important;
+    top:50% !important;
+    left:50% !important;
+    right:auto !important;
+    bottom:auto !important;
+    width:100% !important;
+    height:100% !important;
+    margin:0 !important;
+    object-fit:contain !important;
+    transform-origin:50% 50% !important;
+    mix-blend-mode:screen !important;
+  }
+
+  .magicOuter{animation:rc278FinalOuter 112s linear infinite !important}
+  .magicZodiac{animation:rc278FinalMiddle 78s linear infinite !important}
+  .magicInner{animation:rc278FinalInner 58s linear infinite !important}
+
+  .readerWrap{
+    width:225px !important;
+    right:-70px !important;
+    top:135px !important;
+    bottom:auto !important;
+    z-index:4 !important;
+    opacity:1 !important;
+  }
+
+  .fortuneReader{
+    width:100% !important;
+    height:auto !important;
+    display:block !important;
+  }
+
+  .readerGlow{
+    width:88px !important;
+    height:88px !important;
+    left:31px !important;
+    top:111px !important;
+  }
+
+  .heroCopy{
+    left:26px !important;
+    right:26px !important;
+    top:455px !important;
+    margin:0 !important;
+    font-size:17px !important;
+    line-height:1.72 !important;
+    letter-spacing:.06em !important;
+    text-align:left !important;
+  }
+
+  .heroEnglish{
+    left:26px !important;
+    right:26px !important;
+    top:540px !important;
+    margin:0 !important;
+    font-size:8px !important;
+    letter-spacing:.18em !important;
+  }
+
+  .heroCtas{
+    left:22px !important;
+    right:22px !important;
+    top:575px !important;
+    margin:0 !important;
+  }
+
+  .heroCta{
+    min-height:58px !important;
+    padding:12px 18px !important;
+    font-size:16px !important;
+    border-width:2px !important;
+    box-sizing:border-box !important;
+  }
+
+  .publicTopNav{
+    height:66px !important;
+    padding:0 18px !important;
+    font-size:20px !important;
+  }
+
+  .accountIcon{
+    width:44px !important;
+    height:44px !important;
+    font-size:23px !important;
+  }
+
+  .previewNotice{
+    padding:13px 16px !important;
+    font-size:13px !important;
+    line-height:1.5 !important;
+  }
+
+  .devBuildBanner{
+    padding:11px 12px !important;
+    font-size:14px !important;
+    border-bottom-width:3px !important;
+  }
+}
+
+@keyframes rc278FinalOuter{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278FinalMiddle{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+@keyframes rc278FinalInner{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(-360deg)}
+}
+
+#main{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(66,31,128,.26),transparent 32%),
+    linear-gradient(180deg,#08091e 0%,#140a34 100%) !important;
+}
+/* RC278 FINAL MOBILE LOCK END */
