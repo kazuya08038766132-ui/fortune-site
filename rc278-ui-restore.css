@@ -93,23 +93,22 @@ body{background:#08091e!important}
   }
 
   /* RC278 hotfix: keep the three magic-circle layers concentric but at distinct sizes. */
-  .magicOuter{
+  .magicOuter,
+  .magicZodiac,
+  .magicInner{
     width:100% !important;
     height:100% !important;
+    left:0 !important;
+    top:0 !important;
+  }
+
+  .magicOuter{
     animation:rc278FinalOuter 112s linear infinite !important;
   }
   .magicZodiac{
-    width:87% !important;
-    height:87% !important;
-    left:calc(50% + 3px) !important;
-    top:calc(50% + 2px) !important;
     animation:rc278FinalMiddle 78s linear infinite !important;
   }
   .magicInner{
-    width:63% !important;
-    height:63% !important;
-    left:calc(50% + 3px) !important;
-    top:calc(50% + 2px) !important;
     animation:rc278FinalInner 58s linear infinite !important;
   }
 
@@ -197,16 +196,16 @@ body{background:#08091e!important}
 }
 
 @keyframes rc278FinalOuter{
-  from{transform:translate(-50%,-50%) rotate(0deg)}
-  to{transform:translate(-50%,-50%) rotate(360deg)}
+  from{transform:scale(1) rotate(0deg)}
+  to{transform:scale(1) rotate(360deg)}
 }
 @keyframes rc278FinalMiddle{
-  from{transform:translate(-50%,-50%) rotate(0deg)}
-  to{transform:translate(-50%,-50%) rotate(360deg)}
+  from{transform:scale(.87) rotate(0deg)}
+  to{transform:scale(.87) rotate(360deg)}
 }
 @keyframes rc278FinalInner{
-  from{transform:translate(-50%,-50%) rotate(0deg)}
-  to{transform:translate(-50%,-50%) rotate(-360deg)}
+  from{transform:scale(.63) rotate(0deg)}
+  to{transform:scale(.63) rotate(-360deg)}
 }
 
 #main{
