@@ -86,21 +86,33 @@ body{background:#08091e!important}
     left:50% !important;
     right:auto !important;
     bottom:auto !important;
-    width:100% !important;
-    height:100% !important;
     margin:0 !important;
     object-fit:contain !important;
     transform-origin:50% 50% !important;
     mix-blend-mode:screen !important;
   }
 
-  .magicOuter{animation:rc278FinalOuter 112s linear infinite !important}
-  .magicZodiac{animation:rc278FinalMiddle 78s linear infinite !important}
-  .magicInner{animation:rc278FinalInner 58s linear infinite !important}
+  /* RC278 hotfix: keep the three magic-circle layers concentric but at distinct sizes. */
+  .magicOuter{
+    width:100% !important;
+    height:100% !important;
+    animation:rc278FinalOuter 112s linear infinite !important;
+  }
+  .magicZodiac{
+    width:87% !important;
+    height:87% !important;
+    animation:rc278FinalMiddle 78s linear infinite !important;
+  }
+  .magicInner{
+    width:63% !important;
+    height:63% !important;
+    animation:rc278FinalInner 58s linear infinite !important;
+  }
 
+  /* Move the reader left without changing its scale. */
   .readerWrap{
     width:225px !important;
-    right:-70px !important;
+    right:-20px !important;
     top:135px !important;
     bottom:auto !important;
     z-index:4 !important;
