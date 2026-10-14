@@ -2,13 +2,13 @@ import {FORTUNE_TYPES,FORTUNE_LABELS,normalizeFortuneInput,fortuneInputDigest,re
 
 export function mountFortuneFunnelRoutes(app,{pool,auth,nameRuntime,getPalmReadiness,sameOrigin,csrfGuard,readingLimit}){
  async function account(req,res){
-  const c=await auth.resolve(req,res);
-  if(!c.accountId){res.status(401).json({status:'ACCOUNT_REQUIRED',error:'stable_account_required',message:'無料の占術を確定するには、マイページでメール確認を完了してください。'});return null;}
+  const c=typeof auth.ensureFreeAccount==='function'?await auth.ensureFreeAccount(req,res):await auth.resolve(req,res);
+  if(!c.accountId){res.status(503).json({status:'ACCOUNT_UNAVAILABLE',error:'free_account_unavailable',message:'無料鑑定の利用情報を保存できませんでした。時間を置いて再度お試しください。'});return null;}
   return c;
  }
  app.get('/api/free-fortune-selection',async(req,res)=>{
   const c=await auth.resolve(req,res),saved=await readFreeChoice(pool,c.accountId),palm=getPalmReadiness();
-  res.json({status:'OK',stableAccount:!!c.accountId,freeFortuneType:saved?.fortune_type||null,locked:!!saved,selectedAt:saved?.selected_at||null,
+  res.json({status:'OK',stableAccount:!!c.accountId,freeAccountReady:true,freeFortuneType:saved?.fortune_type||null,locked:!!saved,selectedAt:saved?.selected_at||null,
    choices:FORTUNE_TYPES.map(type=>({type,label:FORTUNE_LABELS[type],available:type==='palm'?palm.ready===true:type==='name'?nameRuntime.readiness().ready===true:true})),
    input:saved?.reading_input||null,inputDigest:saved?.reading_input?fortuneInputDigest(saved.reading_input):null});
  });

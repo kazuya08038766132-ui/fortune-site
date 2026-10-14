@@ -91,8 +91,8 @@ async function refreshChoice({restore=true}={}){
   const available=data.choices.find(x=>x.type===radio.value)?.available===true;
   radio.disabled=!!freeChoice||!available;radio.checked=freeChoice===radio.value;
  }
- $('#freeAccountLink').hidden=stableAccount;
- $('#freeChoiceState').textContent=freeChoice?`無料で見る占術：${labels[freeChoice]}（確定済み・変更できません）`:stableAccount?'まだ確定していません。無料で詳しく見る占術を1つ選んでください。':'確定するには、マイページでメール確認を完了してください。';
+ $('#freeAccountLink').hidden=true;
+ $('#freeChoiceState').textContent=freeChoice?`無料で見る占術：${labels[freeChoice]}（確定済み・変更できません）`:'まだ確定していません。無料で詳しく見る占術を1つ選んでください。選択はこのブラウザのアカウントに保存されます。';
  if(data.choices.find(x=>x.type==='palm')?.available)$('#palmChoiceHelp').textContent='確認できた線から、あなたの持ち味を読む';
  if(data.input&&!restoredDraft.draft){for(const key of ['familyName','givenName','birthDate'])if(!$('#'+key).value)$('#'+key).value=data.input[key]||'';}
  if(restore&&freeChoice&&data.input){
@@ -100,7 +100,7 @@ async function refreshChoice({restore=true}={}){
  }
  return data;
 }
-function friendlyError(code){return ({ACCOUNT_REQUIRED:'無料選択を確定するには、マイページでメール確認を完了してください。',FREE_SELECTION_LOCKED:'このアカウントの無料占術は確定済みです。選択状況を読み直してください。',MODEL_PENDING:'手相の鑑定は準備中です。無料の選択は確定されていません。',BOUNDARY_UNCERTAIN:'節入り当日のため、出生時刻なしでは柱を断定できません。選択は確定されていません。',UNVERIFIED:'手相の推論結果はまだサーバーで確認できていません。未確認の結果は表示せず保留します。',DATA_VERIFY:'お名前の画数を確認できない文字があります。入力を確認してください。選択は確定されていません。',MASTER_NOT_PRESENT:'姓名判断のデータを確認できませんでした。時間を置いて再度お試しください。'})[code]||'鑑定を完了できませんでした。接続状態と入力を確認してください。';}
+function friendlyError(code){return ({ACCOUNT_UNAVAILABLE:'無料鑑定の利用情報を保存できませんでした。時間を置いて再度お試しください。',FREE_SELECTION_LOCKED:'このアカウントの無料占術は確定済みです。選択状況を読み直してください。',MODEL_PENDING:'手相の鑑定は準備中です。無料の選択は確定されていません。',BOUNDARY_UNCERTAIN:'節入り当日のため、出生時刻なしでは柱を断定できません。選択は確定されていません。',UNVERIFIED:'手相の推論結果はまだサーバーで確認できていません。未確認の結果は表示せず保留します。',DATA_VERIFY:'お名前の画数を確認できない文字があります。入力を確認してください。選択は確定されていません。',MASTER_NOT_PRESENT:'姓名判断のデータを確認できませんでした。時間を置いて再度お試しください。'})[code]||'鑑定を完了できませんでした。接続状態と入力を確認してください。';}
 async function showServerReading(input){
  const data=await postFortune('/api/free-fortune-reading',{input});
  renderFreeFunnel(resultGrid,data);summary.textContent=`${data.fullName}さんの${labels[data.freeFortuneType]}の無料鑑定`;
@@ -113,8 +113,7 @@ async function runSelectedReading(){
  if(!validity.ok)return setState($('#formState'),'warn',validity.status==='FUTURE_DATE'?'未来の生年月日は入力できません。':'生年月日は1955年から今日までの正しい日付を入力してください。');
  const chosen=freeChoice||document.querySelector('[name="freeFortuneType"]:checked')?.value;
  if(!choiceLoaded)return setState($('#formState'),'warn','無料選択の確認が完了していません。画面を開き直してください。');
- if(!stableAccount){$('#freeAccountLink').hidden=false;return setState($('#formState'),'warn',friendlyError('ACCOUNT_REQUIRED'));}
- if(!chosen)return setState($('#formState'),'warn','無料で詳しく見る占術を1つ選んでください。');
+  if(!chosen)return setState($('#formState'),'warn','無料で詳しく見る占術を1つ選んでください。');
  if(!freeChoice){pendingChoice={fortuneType:chosen,input};$('#choiceConfirmTitle').textContent=`${labels[chosen]}を無料の占術として確定します`;$('#choiceConfirm').hidden=false;$('#choiceConfirm').focus();return;}
  try{setState($('#formState'),'warn','確定済みの占術で鑑定しています…');await showServerReading(input);results.scrollIntoView({behavior:'smooth',block:'start'});}
  catch(e){setState($('#formState'),'bad',friendlyError(e.code));}

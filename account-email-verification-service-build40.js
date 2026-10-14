@@ -11,7 +11,7 @@ export function createAccountEmailVerification({pool,secret,enqueueEmail,verific
   if(!parsed)return res.json(generic);
   if(rateLimiter){const lim=await rateLimiter.check({email:parsed.lookup,ip:req.ip});if(!lim.allowed)return res.json(generic)}
   const cur=await pool.query(`SELECT ua.verified_email FROM account_sessions s JOIN user_accounts ua ON ua.id=s.account_id WHERE s.session_key=$1 LIMIT 1`,[sid]);
-  if(cur.rowCount){
+  if(cur.rowCount&&cur.rows[0].verified_email){
    if(String(cur.rows[0].verified_email||'').toLowerCase()===parsed.lookup)return res.json({...generic,alreadyVerified:true});
    return res.status(409).json({error:"stable_account_already_verified"});
   }
@@ -34,11 +34,22 @@ export function createAccountEmailVerification({pool,secret,enqueueEmail,verific
    if(!tq.rowCount){await c.query('ROLLBACK');return res.status(400).json({error:"invalid_or_expired_verification_token"})}
    const row=tq.rows[0];
    if(row.session_key!==sid){await c.query('ROLLBACK');return res.status(409).json({error:"verification_same_browser_required"})}
-   const linked=await c.query(`SELECT ua.id,ua.verified_email FROM account_sessions s JOIN user_accounts ua ON ua.id=s.account_id WHERE s.session_key=$1 LIMIT 1`,[sid]);
-   if(linked.rowCount&&String(linked.rows[0].verified_email||'').toLowerCase()!==String(row.email).toLowerCase()){await c.query('ROLLBACK');return res.status(409).json({error:"stable_account_already_verified"})}
+   const linked=await c.query(`SELECT ua.id,ua.verified_email FROM account_sessions s JOIN user_accounts ua ON ua.id=s.account_id WHERE s.session_key=$1 LIMIT 1 FOR UPDATE`,[sid]);
+   const linkedEmail=String(linked.rows[0]?.verified_email||'').toLowerCase();
+   if(linked.rowCount&&linkedEmail&&linkedEmail!==String(row.email).toLowerCase()){await c.query('ROLLBACK');return res.status(409).json({error:"stable_account_already_verified"})}
    let aq=await c.query(`SELECT id FROM user_accounts WHERE LOWER(verified_email)=LOWER($1) LIMIT 1 FOR UPDATE`,[row.email]);
    let accountId=aq.rows[0]?.id;
-   if(!accountId){accountId=newOpaqueId();await c.query(`INSERT INTO user_accounts(id,verified_email,email_verified_at) VALUES($1,$2,NOW())`,[accountId,row.email])}
+   if(linked.rowCount&&!linkedEmail){
+    const anonymousId=linked.rows[0].id;
+    if(accountId&&accountId!==anonymousId){
+     await migrateSessionResources(c,{sessionKey:sid,accountId});
+    }else{
+     accountId=anonymousId;
+     await c.query(`UPDATE user_accounts SET verified_email=$2,email_verified_at=NOW(),updated_at=NOW() WHERE id=$1`,[accountId,row.email]);
+    }
+   }else if(!accountId){
+    accountId=newOpaqueId();await c.query(`INSERT INTO user_accounts(id,verified_email,email_verified_at) VALUES($1,$2,NOW())`,[accountId,row.email])
+   }
    await migrateSessionResources(c,{sessionKey:sid,accountId});
    await c.query(`UPDATE email_verification_tokens SET used_at=NOW() WHERE token_hash=$1`,[h]);
    await c.query(`DELETE FROM account_sessions WHERE session_key=$1`,[sid]);

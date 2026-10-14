@@ -1,8 +1,32 @@
+import crypto from 'crypto';
 export function createAuthorization({pool,ensureVisitorSession}){
  async function resolve(req,res){
   const sid=ensureVisitorSession(req,res);
   const aq=await pool.query(`SELECT account_id FROM account_sessions WHERE session_key=$1 LIMIT 1`,[sid]);
   return {sid,accountId:aq.rows[0]?.account_id||null};
+ }
+ async function ensureFreeAccount(req,res){
+  const current=await resolve(req,res);
+  if(current.accountId)return current;
+  const c=await pool.connect();
+  try{
+   await c.query('BEGIN');
+   const locked=await c.query(`SELECT account_id FROM account_sessions WHERE session_key=$1 LIMIT 1 FOR UPDATE`,[current.sid]);
+   if(locked.rowCount){
+    await c.query('COMMIT');
+    return {sid:current.sid,accountId:locked.rows[0].account_id};
+   }
+   const accountId=`anon_${crypto.randomBytes(18).toString('hex')}`;
+   await c.query(`INSERT INTO user_accounts(id) VALUES($1)`,[accountId]);
+   await c.query(`INSERT INTO account_sessions(session_key,account_id) VALUES($1,$2)`,[current.sid,accountId]);
+   await c.query('COMMIT');
+   return {sid:current.sid,accountId};
+  }catch(e){
+   await c.query('ROLLBACK').catch(()=>{});
+   const retry=await resolve(req,res);
+   if(retry.accountId)return retry;
+   throw e;
+  }finally{c.release()}
  }
  async function ownsOrder(req,res,orderId){
   const {sid,accountId}=await resolve(req,res);
@@ -31,5 +55,5 @@ export function createAuthorization({pool,ensureVisitorSession}){
    const m=await membership(req,res);
    return m?.stripe_customer_id?{stripe_customer_id:m.stripe_customer_id,subscription_status:m.subscription_status}:null;
  }
- return {resolve,ownsOrder,membership,activeMembership,customer};
+ return {resolve,ensureFreeAccount,ownsOrder,membership,activeMembership,customer};
 }
